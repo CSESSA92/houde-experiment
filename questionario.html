@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090D16">
+<title>CR-01 | Participant Profile</title>
+
+<style>
+:root {
+  --bg:#090D16;
+  --panel:#111A27;
+  --panel2:#0C1520;
+  --line:#26384A;
+  --cyan:#58D9E8;
+  --white:#EDF4FA;
+  --muted:#8295A8;
+}
+* {box-sizing:border-box}
+body {
+  margin:0;
+  background:
+    radial-gradient(ellipse at 50% 0%,#14283a 0%,transparent 50%),
+    var(--bg);
+  color:var(--white);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+header {
+  height:68px;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 6%;
+}
+.brand {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  color:#A6B8C8;
+  font-size:10px;
+  letter-spacing:.19em;
+  font-weight:600;
+}
+.symbol {
+  width:11px;height:11px;
+  border:2px solid var(--cyan);
+  transform:rotate(45deg);
+  box-shadow:0 0 12px #58D9E866;
+}
+.header-right {
+  color:var(--muted);
+  font-size:10px;
+  letter-spacing:.12em;
+}
+main {
+  width:min(760px,92%);
+  margin:65px auto;
+}
+.overline {
+  color:var(--cyan);
+  font-size:10px;
+  letter-spacing:.23em;
+}
+h1 {
+  font-size:clamp(32px,6vw,46px);
+  font-weight:500;
+  letter-spacing:-.04em;
+  margin:17px 0 12px;
+}
+.subtitle {
+  color:#91A3B4;
+  font-size:14px;
+  line-height:1.7;
+  max-width:570px;
+}
+.progress {
+  display:flex;
+  gap:5px;
+  margin:30px 0;
+}
+.progress span {
+  height:3px;
+  flex:1;
+  background:#26384A;
+}
+.progress span:first-child {background:var(--cyan)}
+.section {
+  background:linear-gradient(145deg,#131e2b,#0e1621);
+  border:1px solid var(--line);
+  border-radius:9px;
+  padding:25px;
+  margin-bottom:18px;
+}
+.section-head {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:22px;
+}
+.number {
+  color:var(--cyan);
+  font-size:11px;
+  letter-spacing:.12em;
+}
+h2 {
+  font-size:15px;
+  font-weight:500;
+  margin:0;
+}
+label {
+  display:block;
+  color:#B7C5D1;
+  font-size:12px;
+  margin:17px 0 8px;
+}
+input,select {
+  width:100%;
+  background:#0A111B;
+  color:var(--white);
+  border:1px solid #34485C;
+  padding:13px;
+  border-radius:5px;
+  font-size:14px;
+  outline:none;
+}
+input:focus,select:focus {
+  border-color:var(--cyan);
+  box-shadow:0 0 0 2px #58D9E81c;
+}
+select option {background:#111A27}
+.grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+}
+.choices {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:12px;
+}
+.choice {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:#0A111B;
+  border:1px solid #26384A;
+  border-radius:5px;
+  padding:12px;
+  color:#B7C5D1;
+  font-size:12px;
+  cursor:pointer;
+}
+.choice input {
+  width:16px;
+  height:16px;
+  accent-color:#58D9E8;
+  margin:0;
+  flex-shrink:0;
+}
+.help {
+  color:#71869A;
+  font-size:11px;
+  line-height:1.6;
+  margin-top:8px;
+}
+button {
+  width:100%;
+  padding:16px;
+  background:#153744;
+  border:1px solid var(--cyan);
+  border-radius:5px;
+  color:#9CEBF1;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.16em;
+  cursor:pointer;
+}
+button:hover {
+  background:#1c4b5a;
+  box-shadow:0 0 22px #58D9E822;
+}
+.notice {
+  border:1px solid #26384A;
+  padding:16px;
+  border-radius:6px;
+  color:#8295A8;
+  font-size:11px;
+  line-height:1.7;
+  margin-bottom:20px;
+}
+footer {
+  border-top:1px solid var(--line);
+  padding:25px 6%;
+  display:flex;
+  justify-content:space-between;
+  color:#62778A;
+  font-size:9px;
+  letter-spacing:.12em;
+}
+.message {
+  color:#FF9999;
+  font-size:12px;
+  margin:12px 0;
+}
+@media(max-width:600px) {
+  header {padding:0 4%}
+  main {margin:40px auto}
+  .section {padding:19px}
+  .grid,.choices {grid-template-columns:1fr}
+  footer {flex-direction:column;gap:10px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="brand">
+    <div class="symbol"></div>
+    COGNITIVE RESEARCH SYSTEM
+  </div>
+  <div class="header-right">CR—01 / PROFILE</div>
+</header>
+
+<main>
+
+  <div class="overline">PARTICIPANT DATA / 01</div>
+  <h1>Participant profile.</h1>
+  <p class="subtitle">
+    Informazioni personali e professionali necessarie
+    alla caratterizzazione del campione di ricerca.
+    Compila i campi richiesti.
+  </p>
+
+  <div class="progress">
+    <span></span><span></span><span></span><span></span>
+  </div>
+
+  <form id="profileForm">
+
+    <section class="section">
+      <div class="section-head">
+        <span class="number">01</span>
+        <h2>Informazioni personali</h2>
+      </div>
+
+      <div class="grid">
+        <div>
+          <label for="age">ETÀ</label>
+          <input type="number" id="age" min="18" max="100"
+            placeholder="Età in anni" required>
+        </div>
+        <div>
+          <label for="sex">SESSO</label>
+          <select id="sex" required>
+            <option value="">Seleziona</option>
+            <option value="F">Femmina</option>
+            <option value="M">Maschio</option>
+            <option value="ALTRO">Altro</option>
+            <option value="NR">Preferisco non rispondere</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <span class="number">02</span>
+        <h2>Esperienza professionale</h2>
+      </div>
+
+      <label for="experience">ANNI DI ESPERIENZA COME DOCENTE</label>
+      <select id="experience" required>
+        <option value="">Seleziona</option>
+        <option value="0">Nessuna esperienza</option>
+        <option value="1">Meno di 1 anno</option>
+        <option value="1-2">1–2 anni</option>
+        <option value="3-5">3–5 anni</option>
+        <option value="6-10">6–10 anni</option>
+        <option value="11-15">11–15 anni</option>
+        <option value="16-20">16–20 anni</option>
+        <option value="21-25">21–25 anni</option>
+        <option value="26-30">26–30 anni</option>
+        <option value="31-35">31–35 anni</option>
+        <option value="36+">Oltre 35 anni</option>
+      </select>
+
+      <label>ORDINI SCOLASTICI IN CUI HAI INSEGNATO</label>
+      <div class="choices">
+        <label class="choice"><input type="checkbox" name="school" value="Infanzia"> Scuola dell'infanzia</label>
+        <label class="choice"><input type="checkbox" name="school" value="Primaria"> Scuola primaria</label>
+        <label class="choice"><input type="checkbox" name="school" value="Secondaria I"> Secondaria di I grado</label>
+        <label class="choice"><input type="checkbox" name="school" value="Secondaria II"> Secondaria di II grado</label>
+      </div>
+
+      <label for="qualification">TITOLO DI STUDIO PIÙ ELEVATO</label>
+      <select id="qualification" required>
+        <option value="">Seleziona</option>
+        <option value="Diploma">Diploma di scuola secondaria superiore</option>
+        <option value="Laurea triennale">Laurea triennale</option>
+        <option value="Laurea magistrale">Laurea magistrale / specialistica</option>
+        <option value="Vecchio ordinamento">Laurea vecchio ordinamento</option>
+        <option value="AFAM">Diploma accademico AFAM</option>
+        <option value="Dottorato">Dottorato di ricerca</option>
+        <option value="Altro">Altro</option>
+      </select>
+
+      <label for="degreeYear">ANNO DI CONSEGUIMENTO DEL TITOLO</label>
+      <select id="degreeYear" required>
+        <option value="">Seleziona l'anno</option>
+      </select>
+
+      <label for="abilitation">ABILITAZIONE ALL'INSEGNAMENTO NELLA CLASSE DI CONCORSO</label>
+      <select id="abilitation" required>
+        <option value="">Seleziona</option>
+        <option value="1">Sì</option>
+        <option value="0">No</option>
+      </select>
+
+      <label for="support">SPECIALIZZAZIONE SUL SOSTEGNO PER UN ALTRO ORDINE SCOLASTICO</label>
+      <select id="support" required>
+        <option value="">Seleziona</option>
+        <option value="1">Sì</option>
+        <option value="0">No</option>
+      </select>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <span class="number">03</span>
+        <h2>Graduatorie</h2>
+      </div>
+
+      <label for="gps">ANNO DI PRIMA ISCRIZIONE NELLE GPS</label>
+      <select id="gps" required>
+        <option value="">Seleziona</option>
+        <option value="NEVER">Mai iscritto/a</option>
+      </select>
+
+      <label for="gae">ANNO DI PRIMA ISCRIZIONE NELLE GAE</label>
+      <select id="gae" required>
+        <option value="">Seleziona</option>
+        <option value="NEVER">Mai iscritto/a</option>
+      </select>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <span class="number">04</span>
+        <h2>Specializzazioni e formazione post-laurea</h2>
+      </div>
+
+      <p class="help">
+        Seleziona tutti i titoli e percorsi di formazione
+        posseduti. Questa sezione è distinta dal titolo
+        accademico più elevato.
+      </p>
+
+      <div class="choices">
+        <label class="choice"><input type="checkbox" name="specialization" value="Sostegno"> Specializzazione sul sostegno</label>
+        <label class="choice"><input type="checkbox" name="specialization" value="TFA"> TFA</label>
+        <label class="choice"><input type="checkbox" name="specialization" value="Master I"> Master universitario I livello</label>
+        <label class="choice"><input type="checkbox" name="specialization" value="Master II"> Master universitario II livello</label>
+        <label class="choice"><input type="checkbox" name="specialization" value="Perfezionamento"> Corso di perfezionamento</label>
+        <label class="choice"><input type="checkbox" name="specialization" value="Altra specializzazione"> Altra specializzazione</label>
+        <label class="choice"><input type="checkbox" name="specialization" value="Nessuno"> Nessuno</label>
+      </div>
+      <p class="help">
+        Nota: i titoli saranno registrati separatamente
+        nella matrice finale, uno per ciascuna tipologia.
+      </p>
+    </section>
+
+    <div class="notice">
+      <strong>PROTEZIONE DEI DATI</strong><br>
+      Questa è una versione dimostrativa dell'interfaccia.
+      I dati inseriti non vengono trasmessi né archiviati.
+      Non utilizzare ancora questo modulo per la raccolta
+      di informazioni reali.
+    </div>
+
+    <div id="error" class="message"></div>
+    <button type="submit">VALIDATE PROFILE →</button>
+
+  </form>
+</main>
+
+<footer>
+  <span>CR—01 / COGNITIVE RESEARCH</span>
+  <span>PARTICIPANT PROFILE · DEVELOPMENT VERSION</span>
+</footer>
+
+<script>
+const currentYear = new Date().getFullYear();
+
+function fillYears(id, firstYear) {
+  const select = document.getElementById(id);
+  for (let year = currentYear; year >= firstYear; year--) {
+    const option = document.createElement("option");
+    option.value = year;
+    option.textContent = year;
+    select.appendChild(option);
+  }
+}
+
+fillYears("degreeYear", 1960);
+fillYears("gps", 2000);
+fillYears("gae", 1990);
+
+document.getElementById("profileForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const specializations = [
+    ...document.querySelectorAll('input[name="specialization"]:checked')
+  ].map(x => x.value);
+
+  const error = document.getElementById("error");
+
+  if (
+    specializations.includes("Nessuno") &&
+    specializations.length > 1
+  ) {
+    error.textContent =
+      "La voce Nessuno non può essere selezionata insieme ad altri titoli.";
+    return;
+  }
+
+  error.textContent =
+    "Profilo dimostrativo validato. Nessun dato è stato salvato o trasmesso.";
+  error.style.color = "#58D9E8";
+});
+</script>
+
+</body>
+</html>
