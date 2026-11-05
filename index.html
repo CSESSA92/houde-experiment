@@ -245,8 +245,13 @@ start.addEventListener("click", () => {
   }
 
   error.classList.add("hidden");
-  document.getElementById("access").classList.add("hidden");
-  document.getElementById("welcome").classList.remove("hidden");
+
+// Salva temporaneamente il codice e la sessione
+sessionStorage.setItem("participant", participant);
+sessionStorage.setItem("session", session);
+
+// Passa al questionario
+window.location.href = "questionario.html";
 });
 
 back.addEventListener("click", () => {
