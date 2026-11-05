@@ -228,6 +228,10 @@ footer {
 
   <div class="overline">PARTICIPANT DATA / 01</div>
   <h1>Participant profile.</h1>
+  
+<div class="hint" id="participantCode">
+  PARTICIPANT ID: IN ATTESA
+</div>
   <p class="subtitle">
     Informazioni personali e professionali necessarie
     alla caratterizzazione del campione di ricerca.
@@ -409,6 +413,13 @@ fillYears("degreeYear", 1960);
 fillYears("gps", 2000);
 fillYears("gae", 1990);
 
+  const participant = sessionStorage.getItem("participant");
+const session = sessionStorage.getItem("session");
+
+document.getElementById("participantCode").textContent =
+  "PARTICIPANT ID: " + (participant || "NON DISPONIBILE") +
+  " · SESSION: " + (session || "NON DISPONIBILE");
+  
 document.getElementById("profileForm").addEventListener("submit", function(e) {
   e.preventDefault();
 
