@@ -944,11 +944,17 @@ document.getElementById("profileForm").addEventListener("submit", function(e) {
 });
 
 document.getElementById("startTask").addEventListener("click", function() {
-  // Controbilanciamento 1:1 dell'ordine dei due compiti cognitivi.
-  const order = Math.random() < 0.5 ? "houde_first" : "stroop_first";
-  sessionStorage.setItem("taskOrder", order);
-  sessionStorage.setItem("taskOrderAssignedAt", new Date().toISOString());
-  window.location.href = order === "houde_first" ? "compito-houde.html" : "compito-stroop.html";
+  // Controbilanciamento 1:1 tra il blocco cognitivo (Wason + Stroop) e il compito Almost.
+  const blockOrder = Math.random() < 0.5 ? "inhibition_first" : "almost_first";
+  // Ordine interno, indipendente, dei due compiti cognitivi.
+  const cognitiveOrder = Math.random() < 0.5 ? "houde_first" : "stroop_first";
+  const assignedAt = new Date().toISOString();
+  sessionStorage.setItem("taskBlockOrder", blockOrder);
+  sessionStorage.setItem("taskBlockOrderAssignedAt", assignedAt);
+  sessionStorage.setItem("taskOrder", cognitiveOrder);
+  sessionStorage.setItem("taskOrderAssignedAt", assignedAt);
+  const firstCognitiveTask = cognitiveOrder === "houde_first" ? "compito-houde.html" : "compito-stroop.html";
+  window.location.href = blockOrder === "almost_first" ? "almost.html" : firstCognitiveTask;
 });
 
 document.getElementById("backToProfile").addEventListener("click", function() {
