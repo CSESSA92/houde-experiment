@@ -109,6 +109,14 @@ document.getElementById("download").addEventListener("click",()=>{
  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");
  a.href=url;a.download="CR01_"+participant+"_ALMOST.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 });
-document.getElementById("continue").addEventListener("click",()=>{document.getElementById("summary").textContent+=" Sessione completata.";});
+document.getElementById("continue").addEventListener("click",()=>{
+ const blockOrder=sessionStorage.getItem("taskBlockOrder")||"inhibition_first";
+ const cognitiveOrder=sessionStorage.getItem("taskOrder")||"houde_first";
+ if(blockOrder==="almost_first"){
+  window.location.href=cognitiveOrder==="houde_first"?"compito-houde.html":"compito-stroop.html";
+ }else{
+  window.location.href="esporta-dati.html";
+ }
+});
 </script>
 </body></html>
