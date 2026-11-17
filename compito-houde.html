@@ -96,7 +96,7 @@ footer{border-top:1px solid var(--line);padding:24px 6%;display:flex;justify-con
 const participant = sessionStorage.getItem("participant") || "";
 const profile = JSON.parse(sessionStorage.getItem("participantProfile") || "null");
 if (!participant || !profile) {
-  document.getElementById("instructions").innerHTML = '<div class="notice">Profilo partecipante non trovato. Torna alla pagina iniziale e completa l'accesso.</div><div class="actions"><button onclick="location.href=\'index.html\'">TORNA ALL’ACCESSO</button></div>';
+  document.getElementById("instructions").innerHTML = '<div class="notice">Profilo partecipante non trovato. Torna alla pagina iniziale e completa l\'accesso.</div><div class="actions"><button onclick="location.href=\'index.html\'">TORNA ALL’ACCESSO</button></div>';
 }
 document.getElementById("participantLine").textContent = participant ? "CODICE PARTECIPANTE: " + participant : "ACCESSO NON DISPONIBILE";
 document.getElementById("participantShort").textContent = participant;
