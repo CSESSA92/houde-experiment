@@ -588,7 +588,7 @@ footer {
       </p>
 
       <div class="choices">
-        <label class="choice"><input type="checkbox" name="specialization" value="TFA"> TFA</label>
+        <label class="choice" id="tfaSpecializationChoice"><input type="checkbox" name="specialization" value="TFA sostegno" id="tfaSpecialization"> TFA sostegno</label>
         <label class="choice"><input type="checkbox" name="specialization" value="Master I"> Master universitario I livello</label>
         <label class="choice"><input type="checkbox" name="specialization" value="Master II"> Master universitario II livello</label>
         <label class="choice"><input type="checkbox" name="specialization" value="Perfezionamento"> Corso di perfezionamento</label>
@@ -821,10 +821,18 @@ function updateExperienceFields() {
 experienceSelect.addEventListener("change", updateExperienceFields);
 updateExperienceFields();
 
+const tfaSpecialization = document.getElementById("tfaSpecialization");
+const tfaSpecializationChoice = document.getElementById("tfaSpecializationChoice");
+
 function updateSupportOrders() {
-  supportOrdersWrap.hidden = supportSelect.value !== "1";
+  const hasSupportSpecialization = supportSelect.value === "1";
+  supportOrdersWrap.hidden = !hasSupportSpecialization;
+  tfaSpecialization.disabled = !hasSupportSpecialization;
+  tfaSpecializationChoice.hidden = !hasSupportSpecialization;
+  if (!hasSupportSpecialization) tfaSpecialization.checked = false;
 }
 supportSelect.addEventListener("change", updateSupportOrders);
+updateSupportOrders();
 
 document.getElementById("profileForm").addEventListener("submit", function(e) {
   e.preventDefault();
@@ -901,6 +909,10 @@ document.getElementById("profileForm").addEventListener("submit", function(e) {
 
   if (supportSelect.value === "1" && supportOrders.length === 0) {
     error.textContent = "Hai indicato di possedere la specializzazione sul sostegno: seleziona almeno un ordine scolastico.";
+    return;
+  }
+  if (supportSelect.value !== "1" && specializations.includes("TFA sostegno")) {
+    error.textContent = "Hai indicato di non possedere la specializzazione sul sostegno: non puoi selezionare il TFA sostegno.";
     return;
   }
 
