@@ -297,7 +297,9 @@ footer {
         <label class="choice"><input type="checkbox" name="school" value="Primaria"> Scuola primaria</label>
         <label class="choice"><input type="checkbox" name="school" value="Secondaria I"> Secondaria di I grado</label>
         <label class="choice"><input type="checkbox" name="school" value="Secondaria II"> Secondaria di II grado</label>
+        <label class="choice"><input type="checkbox" name="school" value="Nessuno"> Nessuno (non ho mai insegnato)</label>
       </div>
+      <p class="help">Se non hai mai svolto attività di insegnamento, seleziona «Nessuno».</p>
 
       <label for="qualification">TITOLO DI STUDIO PIÙ ELEVATO</label>
       <select id="qualification" required>
@@ -453,6 +455,20 @@ document.getElementById("participantCode").textContent =
 const supportSelect = document.getElementById("support");
 const supportOrdersWrap = document.getElementById("supportOrdersWrap");
 
+// La voce "Nessuno" è esclusiva rispetto agli ordini scolastici.
+const schoolCheckboxes = [...document.querySelectorAll('input[name="school"]')];
+const noSchoolCheckbox = schoolCheckboxes.find(x => x.value === "Nessuno");
+const taughtSchoolCheckboxes = schoolCheckboxes.filter(x => x.value !== "Nessuno");
+
+noSchoolCheckbox.addEventListener("change", () => {
+  if (noSchoolCheckbox.checked) taughtSchoolCheckboxes.forEach(x => { x.checked = false; });
+});
+taughtSchoolCheckboxes.forEach(x => {
+  x.addEventListener("change", () => {
+    if (x.checked) noSchoolCheckbox.checked = false;
+  });
+});
+
 function updateSupportOrders() {
   supportOrdersWrap.hidden = supportSelect.value !== "1";
 }
@@ -476,7 +492,20 @@ document.getElementById("profileForm").addEventListener("submit", function(e) {
   error.textContent = "";
 
   if (schools.length === 0) {
-    error.textContent = "Seleziona almeno un ordine scolastico in cui hai insegnato.";
+    error.textContent = "Seleziona almeno un ordine scolastico oppure Nessuno se non hai mai insegnato.";
+    return;
+  }
+  if (schools.includes("Nessuno") && schools.length > 1) {
+    error.textContent = "La voce Nessuno non può essere selezionata insieme a un ordine scolastico.";
+    return;
+  }
+  const experience = document.getElementById("experience").value;
+  if (experience === "0" && !schools.includes("Nessuno")) {
+    error.textContent = "Hai indicato di non avere esperienza: seleziona Nessuno negli ordini scolastici.";
+    return;
+  }
+  if (experience !== "0" && schools.includes("Nessuno")) {
+    error.textContent = "Hai selezionato Nessuno ma hai indicato anni di esperienza: seleziona gli ordini scolastici in cui hai insegnato.";
     return;
   }
   if (specializations.length === 0) {
