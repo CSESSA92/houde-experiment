@@ -265,8 +265,13 @@ function finish(){
   localStorage.setItem("CR01_"+participant+"_HOUDE",JSON.stringify(record));
 }
 document.getElementById("continue").addEventListener("click",()=>{
-  const order=sessionStorage.getItem("taskOrder")||"houde_first";
-  window.location.href=order==="houde_first"?"compito-stroop.html":"almost.html";
+  const cognitiveOrder=sessionStorage.getItem("taskOrder")||"houde_first";
+  const blockOrder=sessionStorage.getItem("taskBlockOrder")||"inhibition_first";
+  if(cognitiveOrder==="houde_first"){
+    window.location.href="compito-stroop.html";
+  }else{
+    window.location.href=blockOrder==="inhibition_first"?"almost.html":"esporta-dati.html";
+  }
 });
 document.getElementById("download").addEventListener("click",()=>{
   const columns=Object.keys(results[0]||{});
