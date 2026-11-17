@@ -944,7 +944,11 @@ document.getElementById("profileForm").addEventListener("submit", function(e) {
 });
 
 document.getElementById("startTask").addEventListener("click", function() {
-  window.location.href = "compito-houde.html";
+  // Controbilanciamento 1:1 dell'ordine dei due compiti cognitivi.
+  const order = Math.random() < 0.5 ? "houde_first" : "stroop_first";
+  sessionStorage.setItem("taskOrder", order);
+  sessionStorage.setItem("taskOrderAssignedAt", new Date().toISOString());
+  window.location.href = order === "houde_first" ? "compito-houde.html" : "compito-stroop.html";
 });
 
 document.getElementById("backToProfile").addEventListener("click", function() {
