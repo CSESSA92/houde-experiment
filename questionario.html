@@ -163,6 +163,78 @@ select option {background:#111A27}
   opacity:.45;
   cursor:not-allowed;
 }
+.habilitation-picker {
+  margin-top:12px;
+  border:1px solid #26384A;
+  border-radius:7px;
+  overflow:hidden;
+  background:#0A111B;
+}
+.habilitation-search {
+  display:block;
+  width:100%;
+  margin:0;
+  border:0;
+  border-bottom:1px solid #26384A;
+  border-radius:0;
+  background:#0D1723;
+  padding:14px;
+  color:var(--white);
+}
+.habilitation-list {
+  max-height:360px;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
+.habilitation-group-title {
+  padding:12px 13px 7px;
+  color:var(--cyan);
+  font-size:10px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  background:#111A27;
+}
+.habilitation-option {
+  display:flex;
+  align-items:flex-start;
+  gap:11px;
+  padding:12px 13px;
+  margin:0;
+  min-height:46px;
+  border-bottom:1px solid #1C2A39;
+  color:#D4DEE7;
+  font-size:13px;
+  line-height:1.45;
+  cursor:pointer;
+}
+.habilitation-option input {
+  width:19px;
+  height:19px;
+  min-width:19px;
+  margin:0;
+  padding:0;
+  accent-color:var(--cyan);
+  cursor:pointer;
+}
+.habilitation-option:has(input:checked) {
+  background:#12303A;
+  color:#BDF6F8;
+}
+.habilitation-empty {
+  padding:16px;
+  color:#8295A8;
+  font-size:12px;
+}
+.habilitation-summary {
+  padding:10px 13px;
+  border-top:1px solid #26384A;
+  color:#8FA5B8;
+  font-size:11px;
+}
+@media(max-width:600px) {
+  .habilitation-list {max-height:300px}
+  .habilitation-option {min-height:50px; padding:14px 12px}
+}
 .help {
   color:#71869A;
   font-size:11px;
@@ -367,7 +439,8 @@ footer {
       <div id="abilitationClassesWrap" hidden>
         <label for="abilitationClasses">CLASSE/I DI CONCORSO PER CUI POSSIEDI L'ABILITAZIONE</label>
         <p class="help">Puoi selezionare più classi. Su computer usa Ctrl (Windows) o Cmd (Mac); su tablet tocca le voci da selezionare.</p>
-        <select id="abilitationClasses" multiple size="8" aria-describedby="abilitationClassesHelp">
+        <div id="abilitationPicker" class="habilitation-picker" hidden></div>
+        <select id="abilitationClasses" multiple size="8" aria-describedby="abilitationClassesHelp" hidden>
           <optgroup label="Scuola dell'infanzia e primaria">
             <option value="AAAA – Scuola dell'infanzia">AAAA – Scuola dell'infanzia</option>
             <option value="EEEE – Scuola primaria">EEEE – Scuola primaria</option>
@@ -596,15 +669,98 @@ const habilitationSelect = document.getElementById("abilitation");
 const habilitationClassesWrap = document.getElementById("abilitationClassesWrap");
 const habilitationClassesSelect = document.getElementById("abilitationClasses");
 
+const habilitationPicker = document.getElementById("abilitationPicker");
+
+function renderHabilitationPicker() {
+  habilitationPicker.innerHTML = "";
+  const search = document.createElement("input");
+  search.type = "search";
+  search.className = "habilitation-search";
+  search.placeholder = "Cerca per codice o denominazione…";
+  search.setAttribute("aria-label", "Cerca una classe di concorso");
+  const list = document.createElement("div");
+  list.className = "habilitation-list";
+  const summary = document.createElement("div");
+  summary.className = "habilitation-summary";
+  summary.setAttribute("aria-live", "polite");
+  const groups = [...habilitationClassesSelect.querySelectorAll("optgroup")];
+
+  groups.forEach(group => {
+    const section = document.createElement("div");
+    section.className = "habilitation-group";
+    const heading = document.createElement("div");
+    heading.className = "habilitation-group-title";
+    heading.textContent = group.label;
+    section.appendChild(heading);
+    [...group.querySelectorAll("option")].forEach(option => {
+      const label = document.createElement("label");
+      label.className = "habilitation-option";
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = option.selected;
+      checkbox.addEventListener("change", () => {
+        option.selected = checkbox.checked;
+        updateHabilitationSummary();
+      });
+      const text = document.createElement("span");
+      text.textContent = option.textContent.trim();
+      label.append(checkbox, text);
+      label.dataset.search = (option.textContent + " " + option.value).toLocaleLowerCase("it");
+      section.appendChild(label);
+    });
+    list.appendChild(section);
+  });
+
+  function updateHabilitationSummary() {
+    const count = [...habilitationClassesSelect.options].filter(option => option.selected).length;
+    summary.textContent = count === 0 ? "Nessuna classe selezionata" : count + (count === 1 ? " classe selezionata" : " classi selezionate");
+  }
+
+  search.addEventListener("input", () => {
+    const term = search.value.trim().toLocaleLowerCase("it");
+    let visibleOptions = 0;
+    [...list.querySelectorAll(".habilitation-group")].forEach(section => {
+      let groupVisible = 0;
+      [...section.querySelectorAll(".habilitation-option")].forEach(label => {
+        const visible = label.dataset.search.includes(term);
+        label.hidden = !visible;
+        if (visible) groupVisible++;
+      });
+      section.hidden = groupVisible === 0;
+      if (groupVisible) visibleOptions += groupVisible;
+    });
+    let empty = list.querySelector(".habilitation-empty");
+    if (visibleOptions === 0) {
+      if (!empty) {
+        empty = document.createElement("div");
+        empty.className = "habilitation-empty";
+        empty.textContent = "Nessuna classe trovata. Prova con un altro codice o termine.";
+        list.appendChild(empty);
+      }
+    } else if (empty) empty.remove();
+  });
+
+  habilitationPicker.append(search, list, summary);
+  updateHabilitationSummary();
+}
+
 function updateHabilitationClasses() {
   const enabled = habilitationSelect.value === "1";
   habilitationClassesWrap.hidden = !enabled;
   habilitationClassesSelect.disabled = !enabled;
-  habilitationClassesSelect.required = enabled;
+  habilitationClassesSelect.required = false;
+  habilitationPicker.hidden = !enabled;
   if (!enabled) {
     [...habilitationClassesSelect.options].forEach(option => { option.selected = false; });
+    habilitationPicker.querySelectorAll('input[type="checkbox"]').forEach(input => { input.checked = false; });
+  }
+  const summary = habilitationPicker.querySelector(".habilitation-summary");
+  if (summary) {
+    const count = [...habilitationClassesSelect.options].filter(option => option.selected).length;
+    summary.textContent = count === 0 ? "Nessuna classe selezionata" : count + (count === 1 ? " classe selezionata" : " classi selezionate");
   }
 }
+renderHabilitationPicker();
 habilitationSelect.addEventListener("change", updateHabilitationClasses);
 updateHabilitationClasses();
 
