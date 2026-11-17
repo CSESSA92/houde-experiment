@@ -94,19 +94,20 @@ const practice=shuffle([
 ]).map((x,i)=>({...x,id:"P"+String(i+1).padStart(2,"0"),condition:x.word.toLowerCase()===x.ink?"congruent":"incongruent",phase:"practice"}));
 const experimental=[];
 let item=1;
-for(const color of palette){
- experimental.push({id:"S"+String(item++).padStart(2,"0"),word:color.word,ink:color.id,condition:"congruent",phase:"experimental"});
+// 12 prove congruenti: ogni parola/colore compare tre volte.
+for(let repeat=0;repeat<3;repeat++){
+ for(const color of palette){
+  experimental.push({id:"S"+String(item++).padStart(2,"0"),word:color.word,ink:color.id,condition:"congruent",phase:"experimental"});
+ }
 }
-const words=palette.map(x=>x.word);
-for(let i=0;i<8;i++){
- const word=words[i%4];
- const ink=palette.find(x=>x.id!==word.toLowerCase() && x.word!==word && x.id===palette[(i+1)%4].id).id;
- experimental.push({id:"S"+String(item++).padStart(2,"0"),word,ink,condition:"incongruent",phase:"experimental"});
-}
-for(let i=0;i<8;i++){
- const word=words[(i+2)%4];
- const ink=palette.find(x=>x.word!==word && x.id===palette[(i+3)%4].id).id;
- experimental.push({id:"S"+String(item++).padStart(2,"0"),word,ink,condition:"incongruent",phase:"experimental"});
+// 12 prove incongruenti: tre occorrenze per ciascuna parola e colore dell'inchiostro,
+// con abbinamenti diversi dalla condizione congruente.
+for(let repeat=0;repeat<3;repeat++){
+ for(let i=0;i<4;i++){
+  const word=palette[i].word;
+  const ink=palette[(i+1+repeat)%4].id;
+  experimental.push({id:"S"+String(item++).padStart(2,"0"),word,ink,condition:"incongruent",phase:"experimental"});
+ }
 }
 const trials=[...practice,...shuffle(experimental)];
 let index=0, onset=0, responded=false, rows=[];
