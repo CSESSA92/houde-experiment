@@ -3,7 +3,7 @@
 <style>
 :root{--bg:#090D16;--line:#26384A;--cyan:#58D9E8;--white:#EDF4FA;--muted:#91A3B4}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#14283a 0%,transparent 52%),var(--bg);color:var(--white);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}header{height:68px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 6%;font-size:10px;letter-spacing:.18em;color:#A6B8C8}main{width:min(760px,92%);margin:48px auto}.overline{font-size:10px;color:var(--cyan);letter-spacing:.2em}h1{font-size:clamp(30px,5vw,44px);font-weight:500;letter-spacing:-.04em;margin:14px 0}.lead{font-size:14px;color:var(--muted);line-height:1.7}.panel{background:#111A27;border:1px solid var(--line);border-radius:9px;padding:25px;margin-top:22px}.status{display:grid;grid-template-columns:1fr auto;gap:12px;padding:13px 0;border-bottom:1px solid var(--line);font-size:13px}.status:last-child{border:0}.muted{color:var(--muted)}.ok{color:#7CE0B0}.missing{color:#FFCF8B}button{width:100%;padding:17px;border:1px solid var(--cyan);border-radius:5px;background:#153744;color:#9CEBF1;font-weight:700;letter-spacing:.12em;cursor:pointer;margin-top:18px}button:disabled{opacity:.4;cursor:not-allowed}.notice{font-size:12px;color:#AFC0CF;line-height:1.7;background:#0A111B;border:1px solid #34485C;border-radius:6px;padding:14px;margin-top:18px}footer{border-top:1px solid var(--line);padding:24px 6%;font-size:9px;letter-spacing:.12em;color:#62778A}
 </style></head><body><header>◇ &nbsp; COGNITIVE RESEARCH SYSTEM / CR—01</header><main><div class="overline">DATA MANAGEMENT / EXPORT</div><h1>Esportazione dei risultati.</h1><p class="lead">Verifica i dati presenti in questo browser e crea un unico file Excel (.xlsx) con fogli separati per profilo, ragionamento condizionale, Stroop e autorilevazione durante il filmato.</p>
-<section class="panel"><div class="status"><span>Codice partecipante</span><strong id="pid">—</strong></div><div class="status"><span>Profilo</span><strong id="profileStatus">—</strong></div><div class="status"><span>Ragionamento condizionale</span><strong id="houdeStatus">—</strong></div><div class="status"><span>Stroop digitale</span><strong id="stroopStatus">—</strong></div><div class="status"><span>Almost</span><strong id="almostStatus">—</strong></div><button id="export" disabled>GENERA FILE EXCEL (.XLSX) ↓</button><div class="notice" id="message">I dati sono letti dalla memoria locale del browser. Prima di cambiare dispositivo o cancellare i dati del browser, esporta e conserva il file. Questa pagina non invia dati a un server.</div></section></main><footer>CR—01 / ESPORTAZIONE LOCALE · DATI NON TRASMESSI AUTOMATICAMENTE</footer>
+<section class="panel"><div class="status"><span>Codice partecipante</span><strong id="pid">—</strong></div><div class="status"><span>Profilo</span><strong id="profileStatus">—</strong></div><div class="status"><span>Ragionamento condizionale</span><strong id="houdeStatus">—</strong></div><div class="status"><span>Stroop digitale</span><strong id="stroopStatus">—</strong></div><div class="status"><span>Almost</span><strong id="almostStatus">—</strong></div><button id="export" disabled>GENERA FILE EXCEL (.XLSX) ↓</button><button id="send" disabled>INVIA I DATI ALL'ARCHIVIO UNISA →</button><div class="notice" id="message">I dati sono letti dalla memoria locale del browser. Puoi conservarne una copia Excel e inviare una copia all'archivio istituzionale. L'esito dell'invio dovrà essere verificato nel foglio Google Sheets.</div></section></main><footer>CR—01 / ESPORTAZIONE LOCALE · DATI NON TRASMESSI AUTOMATICAMENTE</footer>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 const participant=sessionStorage.getItem("participant")||"";
@@ -11,6 +11,8 @@ const profile=JSON.parse(sessionStorage.getItem("participantProfile")||"null");
 const session=sessionStorage.getItem("session")||"";
 const order=sessionStorage.getItem("taskOrder")||"";
 const orderAssignedAt=sessionStorage.getItem("taskOrderAssignedAt")||"";
+const blockOrder=sessionStorage.getItem("taskBlockOrder")||"";
+const blockOrderAssignedAt=sessionStorage.getItem("taskBlockOrderAssignedAt")||"";
 const load=suffix=>{try{return JSON.parse(localStorage.getItem("CR01_"+participant+"_"+suffix)||"null")}catch(e){return null}};
 const houde=participant?load("HOUDE"):null,stroop=participant?load("STROOP"):null,almost=participant?load("ALMOST"):null;
 document.getElementById("pid").textContent=participant||"Non disponibile";
@@ -21,12 +23,56 @@ status("stroopStatus",!!stroop&&Array.isArray(stroop.results),stroop&&stroop.res
 status("almostStatus",!!almost,almost?almost.press_count+" pressioni":"Disponibile");
 const canExport=!!participant&&!!profile&&(!!houde||!!stroop||!!almost);
 document.getElementById("export").disabled=!canExport;
+document.getElementById("send").disabled=!canExport;
+
+document.getElementById("send").addEventListener("click", async ()=>{
+ const button=document.getElementById("send");
+ const message=document.getElementById("message");
+ if(!canExport)return;
+ if(!confirm("Inviare i dati di questa sessione all'archivio Google Sheets istituzionale?"))return;
+ button.disabled=true;
+ button.textContent="INVIO IN CORSO…";
+ message.textContent="Invio in corso. Non chiudere questa pagina.";
+ const payload={
+  participant_id:participant,
+  profile:profile,
+  session:{
+   session_id:session,
+   task_order:order,
+   task_order_assigned_at:orderAssignedAt,
+   task_block_order:blockOrder,
+   task_block_order_assigned_at:blockOrderAssignedAt,
+   submitted_at:new Date().toISOString(),
+   houde_present:!!houde,
+   stroop_present:!!stroop,
+   almost_present:!!almost
+  },
+  reasoning:houde&&Array.isArray(houde.results)?houde.results:[],
+  stroop:stroop&&Array.isArray(stroop.results)?stroop.results:[],
+  almost:almost||{}
+ };
+ try{
+  await fetch("https://script.google.com/a/macros/unisa.it/s/AKfycbzSVkpJE_cXYQSiLE0xnKjtUbLsevXeYzcyaKlz1eFjQrkcdpB5xsjT-nq_0sqM3BR-YA/exec",{
+   method:"POST",
+   mode:"no-cors",
+   headers:{"Content-Type":"text/plain;charset=utf-8"},
+   body:JSON.stringify(payload)
+  });
+  message.textContent="Richiesta di invio trasmessa dal browser. Per sicurezza, verifica che il codice partecipante e le righe dei compiti compaiano nei fogli Google Sheets. Il browser non consente a questa pagina di leggere la conferma del server.";
+  button.textContent="RICHIESTA INVIATA";
+ }catch(error){
+  message.textContent="Invio non riuscito: "+error.message+". I dati sono ancora disponibili in questo browser: genera il file Excel come copia di sicurezza.";
+  button.disabled=false;
+  button.textContent="RIPROVA INVIO →";
+ }
+});
+
 document.getElementById("export").addEventListener("click",()=>{
  if(typeof XLSX==="undefined"){document.getElementById("message").textContent="Libreria Excel non disponibile. Verifica la connessione a Internet e ricarica la pagina.";return;}
  const wb=XLSX.utils.book_new();
  const profileRows=Object.entries(profile||{}).map(([campo,valore])=>({campo,valore:Array.isArray(valore)?valore.join("; "):(typeof valore==="object"&&valore!==null?JSON.stringify(valore):valore)}));
  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(profileRows.length?profileRows:[{informazione:"Profilo non disponibile"}]),"Profilo");
- const sessionRows=[{participant_id:participant,session,task_order_assigned:order,task_order_assigned_at:orderAssignedAt,exported_at:new Date().toISOString(),houde_present:!!houde,stroop_present:!!stroop,almost_present:!!almost}];
+ const sessionRows=[{participant_id:participant,session,task_order_assigned:order,task_order_assigned_at:orderAssignedAt,task_block_order:blockOrder,task_block_order_assigned_at:blockOrderAssignedAt,exported_at:new Date().toISOString(),houde_present:!!houde,stroop_present:!!stroop,almost_present:!!almost}];
  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sessionRows),"Sessione");
  const addRows=(name,rows)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows&&rows.length?rows:[{informazione:"Nessun dato registrato"}]),name);
  addRows("Ragionamento",houde&&houde.results);
