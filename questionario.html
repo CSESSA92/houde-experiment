@@ -618,21 +618,19 @@ footer {
   <section class="section" id="instructionScreen" hidden>
     <div class="section-head">
       <span class="number">02</span>
-      <h2>Istruzioni preliminari</h2>
+      <h2>Profilo completato</h2>
     </div>
     <p class="subtitle">
-      Il profilo del partecipante è stato verificato in questa sessione dimostrativa.
-      Prima di iniziare una prova sperimentale, leggi attentamente le istruzioni
-      che saranno presentate nell'ambiente di ricerca.
+      Il profilo è stato registrato temporaneamente in questa sessione.
+      Puoi proseguire con il compito di ragionamento condizionale.
     </p>
     <div class="notice">
-      <strong>SESSIONE IN MODALITÀ SVILUPPO</strong><br>
-      Il protocollo delle prove non è ancora collegato a questa schermata.
-      Nessuna risposta sperimentale viene raccolta o trasmessa.
-      Non utilizzare questa versione per la somministrazione ai partecipanti.
+      <strong>NOTA SULLA RACCOLTA</strong><br>
+      Questa versione è un prototipo. I risultati del compito vengono salvati sul dispositivo e scaricati in formato CSV al termine. Non sono trasmessi automaticamente a un archivio centrale.
     </div>
     <p class="help" id="profileSummary"></p>
-    <button type="button" id="backToProfile">TORNA AL PROFILO</button>
+    <button type="button" id="startTask">AVVIA COMPITO DI RAGIONAMENTO →</button>
+    <button type="button" class="secondary" id="backToProfile" style="margin-top:12px">TORNA AL PROFILO</button>
   </section>
 </main>
 
@@ -943,6 +941,10 @@ document.getElementById("profileForm").addEventListener("submit", function(e) {
   document.querySelector(".overline").textContent = "PARTICIPANT DATA / 02";
   document.querySelector("h1").textContent = "Instructions.";
   window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+document.getElementById("startTask").addEventListener("click", function() {
+  window.location.href = "compito-houde.html";
 });
 
 document.getElementById("backToProfile").addEventListener("click", function() {
