@@ -229,6 +229,7 @@ document.getElementById("confirm").addEventListener("click",()=>{
   const correct=chosen.length===2 && currentTrial.correct.every(x=>selected.has(x));
   results.push({
     participant_id:participant,
+    profile_json:JSON.stringify(profile),
     task:"wason_selection_adaptation",
     item_id:currentTrial.id,
     presentation_order:trialIndex+1,
