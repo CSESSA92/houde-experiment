@@ -169,7 +169,7 @@ document.getElementById("download").addEventListener("click",()=>{
  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");
  a.href=url;a.download="CR01_"+participant+"_STROOP.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 });
-document.getElementById("continue").addEventListener("click",()=>{window.location.href="almost.html";});
+document.getElementById("continue").addEventListener("click",()=>{window.location.href=(sessionStorage.getItem("taskOrder")||"houde_first")==="houde_first"?"almost.html":"compito-houde.html";});
 </script>
 </body>
 </html>
