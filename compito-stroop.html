@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090D16">
+<title>CR-01 | Interferenza colore-parola</title>
+<style>
+:root{--bg:#090D16;--panel:#111A27;--line:#26384A;--cyan:#58D9E8;--white:#EDF4FA;--muted:#8295A8}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#14283a 0%,transparent 52%),var(--bg);color:var(--white);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{height:68px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 6%}
+.brand{display:flex;align-items:center;gap:12px;font-size:10px;letter-spacing:.19em;color:#A6B8C8;font-weight:600}
+.symbol{width:11px;height:11px;border:2px solid var(--cyan);transform:rotate(45deg);box-shadow:0 0 12px #58D9E866}
+.header-right{font-size:10px;color:var(--muted);letter-spacing:.12em}
+main{width:min(760px,92%);margin:42px auto 60px}
+.overline{color:var(--cyan);font-size:10px;letter-spacing:.23em}
+h1{font-size:clamp(30px,5vw,44px);font-weight:500;letter-spacing:-.04em;margin:14px 0}
+.lead{color:#91A3B4;font-size:14px;line-height:1.7}
+.panel{background:linear-gradient(145deg,#131e2b,#0e1621);border:1px solid var(--line);border-radius:9px;padding:clamp(18px,4vw,30px);margin-top:22px}
+.panel-title{color:var(--cyan);font-size:10px;letter-spacing:.18em;margin-bottom:18px}
+.notice{border:1px solid #34485C;background:#0A111B;border-radius:6px;padding:15px;color:#AFC0CF;font-size:13px;line-height:1.7}
+button{border:1px solid var(--cyan);border-radius:5px;background:#153744;color:#9CEBF1;padding:15px 20px;font-size:11px;letter-spacing:.13em;font-weight:600;cursor:pointer}
+button:hover{background:#1c4b5a}
+button:disabled{opacity:.45;cursor:not-allowed}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+.primary{flex:1}
+.hidden{display:none!important}
+.meta{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:11px;letter-spacing:.08em}
+.progress{height:4px;background:#26384A;border-radius:4px;margin:18px 0;overflow:hidden}
+.progress>span{display:block;height:100%;width:0;background:var(--cyan);transition:width .15s}
+.stimulus-wrap{min-height:210px;display:flex;align-items:center;justify-content:center;background:#0A111B;border:1px solid #26384A;border-radius:8px;margin:18px 0}
+.stimulus{font-size:clamp(48px,12vw,76px);font-weight:750;letter-spacing:.06em}
+.prompt{text-align:center;color:#AFC0CF;font-size:13px;margin:12px 0}
+.responses{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
+.response{min-height:64px;font-size:12px;letter-spacing:.08em;background:#0A111B;border-color:#34485C}
+.response:focus-visible{outline:3px solid var(--white);outline-offset:3px}
+.feedback{min-height:22px;color:#FFCF8B;font-size:12px;margin-top:12px;text-align:center}
+footer{border-top:1px solid var(--line);padding:24px 6%;display:flex;justify-content:space-between;gap:10px;color:#62778A;font-size:9px;letter-spacing:.12em}
+@media(max-width:600px){header{padding:0 4%}.header-right{font-size:9px}main{margin:30px auto}.responses{grid-template-columns:repeat(2,1fr)}.response{min-height:58px}footer{flex-direction:column}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="symbol"></div>COGNITIVE RESEARCH SYSTEM</div><div class="header-right">CR—01 / TASK 02</div></header>
+<main>
+<div class="overline">EXPERIMENTAL TASK / COLOR-WORD INTERFERENCE</div>
+<h1>Riconoscimento del colore.</h1>
+<p class="lead" id="participantLine"></p>
+<section class="panel" id="instructions">
+<div class="panel-title">ISTRUZIONI</div>
+<div class="notice">
+  Comparirà al centro dello schermo una parola scritta con un determinato colore. Il tuo compito è indicare <strong>il colore dell'inchiostro</strong>, ignorando il significato della parola.
+  <br><br>
+  Rispondi il più rapidamente possibile, cercando di essere accurato. Seleziona uno dei quattro pulsanti. Le prime quattro prove servono a familiarizzare con il compito e non saranno incluse nei risultati sperimentali.
+  <br><br>
+  Durante le prove non riceverai indicazioni sulla correttezza delle risposte.
+</div>
+<div class="actions"><button class="primary" id="begin">INIZIA →</button></div>
+</section>
+<section class="panel hidden" id="task">
+<div class="meta"><span id="trialLabel">PROVA</span><span id="participantShort"></span></div>
+<div class="progress"><span id="progressBar"></span></div>
+<div class="stimulus-wrap"><div class="stimulus" id="stimulus" aria-live="off">+</div></div>
+<div class="prompt" id="prompt">Indica il colore dell'inchiostro.</div>
+<div class="responses" id="responses"></div>
+<div class="feedback" id="feedback" aria-live="polite"></div>
+</section>
+<section class="panel hidden" id="complete">
+<div class="panel-title">COMPITO COMPLETATO</div>
+<h2>Hai terminato questa prova.</h2>
+<p class="lead">Le risposte sono state registrate in questa sessione del browser. Scarica il file dei risultati prima di proseguire.</p>
+<div class="notice" id="summary"></div>
+<div class="actions"><button class="primary" id="download">SCARICA RISULTATI CSV ↓</button><button id="continue">CONTINUA →</button></div>
+</section>
+</main>
+<footer><span>CR—01 / COGNITIVE RESEARCH</span><span>COMPITO COLORE-PAROLA · VERSIONE DIGITALE SPERIMENTALE</span></footer>
+<script>
+const participant=sessionStorage.getItem("participant")||"";
+const profile=JSON.parse(sessionStorage.getItem("participantProfile")||"null");
+if(!participant||!profile){
+ document.getElementById("instructions").innerHTML='<div class="notice">Profilo partecipante non trovato. Torna alla pagina iniziale e completa l\'accesso.</div><div class="actions"><button onclick="location.href=\'index.html\'">TORNA ALL’ACCESSO</button></div>';
+}
+document.getElementById("participantLine").textContent=participant?"CODICE PARTECIPANTE: "+participant:"ACCESSO NON DISPONIBILE";
+document.getElementById("participantShort").textContent=participant;
+const palette=[
+ {id:"red",label:"ROSSO",hex:"#F04444",word:"ROSSO"},
+ {id:"blue",label:"BLU",hex:"#54A6F6",word:"BLU"},
+ {id:"green",label:"VERDE",hex:"#43C78B",word:"VERDE"},
+ {id:"yellow",label:"GIALLO",hex:"#F2C94C",word:"GIALLO"}
+];
+function shuffle(a){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]];}return x;}
+const practice=shuffle([
+ {word:"ROSSO",ink:"blue"},{word:"VERDE",ink:"green"},{word:"GIALLO",ink:"red"},{word:"BLU",ink:"yellow"}
+]).map((x,i)=>({...x,id:"P"+String(i+1).padStart(2,"0"),condition:x.word.toLowerCase()===x.ink?"congruent":"incongruent",phase:"practice"}));
+const experimental=[];
+let item=1;
+for(const color of palette){
+ experimental.push({id:"S"+String(item++).padStart(2,"0"),word:color.word,ink:color.id,condition:"congruent",phase:"experimental"});
+}
+const words=palette.map(x=>x.word);
+for(let i=0;i<8;i++){
+ const word=words[i%4];
+ const ink=palette.find(x=>x.id!==word.toLowerCase() && x.word!==word && x.id===palette[(i+1)%4].id).id;
+ experimental.push({id:"S"+String(item++).padStart(2,"0"),word,ink,condition:"incongruent",phase:"experimental"});
+}
+for(let i=0;i<8;i++){
+ const word=words[(i+2)%4];
+ const ink=palette.find(x=>x.word!==word && x.id===palette[(i+3)%4].id).id;
+ experimental.push({id:"S"+String(item++).padStart(2,"0"),word,ink,condition:"incongruent",phase:"experimental"});
+}
+const trials=[...practice,...shuffle(experimental)];
+let index=0, onset=0, responded=false, rows=[];
+let tabHidden=false;
+document.addEventListener("visibilitychange",()=>{if(document.hidden)tabHidden=true;});
+const buttons=palette.map(c=>{
+ const b=document.createElement("button");b.type="button";b.className="response";b.textContent=c.label;b.style.borderBottom="4px solid "+c.hex;b.dataset.color=c.id;
+ b.addEventListener("click",()=>answer(c.id,"button"));return b;
+});
+document.getElementById("responses").append(...buttons);
+function start(){
+ document.getElementById("instructions").classList.add("hidden");
+ document.getElementById("task").classList.remove("hidden");
+ showTrial();
+}
+function showTrial(){
+ if(index>=trials.length){finish();return;}
+ const t=trials[index];responded=false;
+ document.getElementById("trialLabel").textContent=(t.phase==="practice"?"FAMILIARIZZAZIONE ":"PROVA ")+(t.phase==="practice"?index+1:index-3)+" / "+(t.phase==="practice"?4:24);
+ document.getElementById("progressBar").style.width=((index+1)/trials.length*100)+"%";
+ document.getElementById("stimulus").textContent=t.word;
+ document.getElementById("stimulus").style.color=palette.find(c=>c.id===t.ink).hex;
+ document.getElementById("feedback").textContent="";
+ onset=performance.now();
+}
+function answer(color,method){
+ if(responded)return;
+ responded=true;
+ const t=trials[index], rt=Math.round(performance.now()-onset);
+ const correct=color===t.ink;
+ if(t.phase==="experimental"){
+  rows.push({
+   participant_id:participant,task:"digital_color_word_interference",item_id:t.id,phase:t.phase,
+   trial_order:index-3,word:t.word,ink_color:t.ink,condition:t.condition,
+   response_color:color,correct:correct?1:0,response_time_ms:rt,
+   response_method:method,device_type:/iPad|Tablet|Android/i.test(navigator.userAgent)?"tablet_or_mobile":"computer",
+   tab_hidden_during_session:tabHidden?1:0,completed_at:new Date().toISOString()
+  });
+ }
+ document.querySelectorAll(".response").forEach(b=>b.disabled=true);
+ if(t.phase==="practice")document.getElementById("feedback").textContent=correct?"Risposta corretta.":"Colore non corretto.";
+ else document.getElementById("feedback").textContent="";
+ setTimeout(()=>{
+  document.querySelectorAll(".response").forEach(b=>b.disabled=false);
+  index++;showTrial();
+ },t.phase==="practice"?650:350);
+}
+function finish(){
+ document.getElementById("task").classList.add("hidden");
+ document.getElementById("complete").classList.remove("hidden");
+ const acc=rows.length?Math.round(rows.reduce((s,r)=>s+r.correct,0)/rows.length*100):0;
+ document.getElementById("summary").textContent="Prove sperimentali: "+rows.length+" · Accuratezza: "+acc+"% · Codice partecipante: "+participant+". Adattamento digitale esplorativo: non equivale a una versione standardizzata del test Stroop.";
+ localStorage.setItem("CR01_"+participant+"_STROOP",JSON.stringify({participant_id:participant,profile,task:"digital_color_word_interference",results:rows}));
+}
+document.getElementById("begin").addEventListener("click",start);
+document.getElementById("download").addEventListener("click",()=>{
+ const cols=Object.keys(rows[0]||{}),q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+ const csv=[cols.map(q).join(","),...rows.map(r=>cols.map(k=>q(r[k])).join(","))].join("\r\n");
+ const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="CR01_"+participant+"_STROOP.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+});
+document.getElementById("continue").addEventListener("click",()=>{window.location.href="almost.html";});
+</script>
+</body>
+</html>
