@@ -86,8 +86,9 @@ footer{border-top:1px solid var(--line);padding:24px 6%;display:flex;justify-con
     <div class="notice" id="resultSummary"></div>
     <div class="actions">
       <button class="primary" id="download">SCARICA RISULTATI CSV ↓</button>
+      <button id="continue">CONTINUA →</button>
     </div>
-    <p class="feedback">Non chiudere la pagina prima di aver scaricato il file.</p>
+    <p class="feedback">Scarica il file prima di proseguire. I dati restano salvati solo nel browser.</p>
   </section>
 </main>
 <footer><span>CR—01 / COGNITIVE RESEARCH</span><span>RAGIONAMENTO CONDIZIONALE · VERSIONE DI SVILUPPO</span></footer>
@@ -263,6 +264,10 @@ function finish(){
   const record={participant_id:participant,profile:profile,task:"wason_selection_adaptation",results:results};
   localStorage.setItem("CR01_"+participant+"_HOUDE",JSON.stringify(record));
 }
+document.getElementById("continue").addEventListener("click",()=>{
+  const order=sessionStorage.getItem("taskOrder")||"houde_first";
+  window.location.href=order==="houde_first"?"compito-stroop.html":"almost.html";
+});
 document.getElementById("download").addEventListener("click",()=>{
   const columns=Object.keys(results[0]||{});
   const quote=value=>'"'+String(value??"").replace(/"/g,'""')+'"';
