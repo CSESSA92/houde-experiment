@@ -93,6 +93,20 @@ footer{border-top:1px solid var(--line);padding:24px 6%;display:flex;justify-con
 </main>
 <footer><span>CR—01 / COGNITIVE RESEARCH</span><span>RAGIONAMENTO CONDIZIONALE · VERSIONE DI SVILUPPO</span></footer>
 <script>
+/* Avvio di emergenza: resta disponibile anche se il codice successivo incontra un errore. */
+window.startHoudeTask = function () {
+  const instructions = document.getElementById("instructions");
+  const task = document.getElementById("task");
+  if (instructions) instructions.classList.add("hidden");
+  if (task) task.classList.remove("hidden");
+  try {
+    if (typeof showTrial !== "function") throw new Error("La funzione della prova non è stata caricata.");
+    showTrial();
+  } catch (error) {
+    const rule = document.getElementById("rule");
+    if (rule) rule.textContent = "AVVIO NON RIUSCITO: " + (error && error.message ? error.message : String(error));
+  }
+};
 const participant = sessionStorage.getItem("participant") || "";
 const profile = JSON.parse(sessionStorage.getItem("participantProfile") || "null");
 if (!participant || !profile) {
