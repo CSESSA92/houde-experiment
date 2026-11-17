@@ -63,7 +63,7 @@ footer{border-top:1px solid var(--line);padding:24px 6%;display:flex;justify-con
       <br><br>
       Puoi selezionare e deselezionare le carte prima di confermare. Non riceverai indicazioni sulla correttezza delle risposte.
     </div>
-    <div class="actions"><button class="primary" id="begin">INIZIA LA PROVA →</button></div>
+    <div class="actions"><button class="primary" id="begin" type="button" onclick="window.startHoudeTask()">INIZIA LA PROVA →</button></div>
   </section>
 
   <section class="panel hidden" id="task">
@@ -166,11 +166,17 @@ let trialStart = 0;
 let results = [];
 const device = /iPad|Tablet|Android/i.test(navigator.userAgent) ? "tablet_or_mobile" : "computer";
 
-document.getElementById("begin").addEventListener("click",()=>{
-  document.getElementById("instructions").classList.add("hidden");
-  document.getElementById("task").classList.remove("hidden");
-  showTrial();
-});
+window.startHoudeTask = function(){
+  try {
+    document.getElementById("instructions").classList.add("hidden");
+    document.getElementById("task").classList.remove("hidden");
+    showTrial();
+  } catch (error) {
+    document.getElementById("task").classList.remove("hidden");
+    document.getElementById("rule").textContent = "Errore nell'avvio della prova: " + error.message;
+  }
+};
+document.getElementById("begin").addEventListener("click", window.startHoudeTask);
 function showTrial(){
   currentTrial=orderedTrials[trialIndex];
   selected=new Set();
