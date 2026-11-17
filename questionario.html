@@ -159,6 +159,10 @@ select option {background:#111A27}
   margin:0;
   flex-shrink:0;
 }
+.choice:has(input:disabled) {
+  opacity:.45;
+  cursor:not-allowed;
+}
 .help {
   color:#71869A;
   font-size:11px;
@@ -496,6 +500,35 @@ actualPositionCheckboxes.forEach(x => {
     if (x.checked) noPositionCheckbox.checked = false;
   });
 });
+
+// Se il partecipante dichiara di non avere esperienza, i campi relativi
+// agli ordini scolastici, alla tipologia di posto e alla regione non sono compilabili.
+const experienceSelect = document.getElementById("experience");
+const lastTeachingRegionSelect = document.getElementById("lastTeachingRegion");
+
+function updateExperienceFields() {
+  const noExperience = experienceSelect.value === "0";
+
+  taughtSchoolCheckboxes.forEach(x => { x.disabled = noExperience; });
+  noSchoolCheckbox.disabled = noExperience;
+  noSchoolCheckbox.checked = noExperience;
+  if (noExperience) taughtSchoolCheckboxes.forEach(x => { x.checked = false; });
+
+  actualPositionCheckboxes.forEach(x => { x.disabled = noExperience; });
+  noPositionCheckbox.disabled = noExperience;
+  noPositionCheckbox.checked = noExperience;
+  if (noExperience) actualPositionCheckboxes.forEach(x => { x.checked = false; });
+
+  lastTeachingRegionSelect.disabled = noExperience;
+  if (noExperience) {
+    lastTeachingRegionSelect.value = "Nessuna esperienza";
+  } else if (lastTeachingRegionSelect.value === "Nessuna esperienza") {
+    lastTeachingRegionSelect.value = "";
+  }
+}
+
+experienceSelect.addEventListener("change", updateExperienceFields);
+updateExperienceFields();
 
 function updateSupportOrders() {
   supportOrdersWrap.hidden = supportSelect.value !== "1";
