@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090D16">
+<title>CR-01 | Autorilevazione della mentalizzazione</title>
+<style>
+:root{--bg:#090D16;--panel:#111A27;--line:#26384A;--cyan:#58D9E8;--white:#EDF4FA;--muted:#8295A8}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#14283a 0%,transparent 52%),var(--bg);color:var(--white);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{height:68px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 6%}.brand{display:flex;align-items:center;gap:12px;font-size:10px;letter-spacing:.19em;color:#A6B8C8;font-weight:600}.symbol{width:11px;height:11px;border:2px solid var(--cyan);transform:rotate(45deg);box-shadow:0 0 12px #58D9E866}.header-right{font-size:10px;color:var(--muted);letter-spacing:.12em}
+main{width:min(850px,92%);margin:42px auto 60px}.overline{color:var(--cyan);font-size:10px;letter-spacing:.23em}h1{font-size:clamp(29px,5vw,43px);font-weight:500;letter-spacing:-.04em;margin:14px 0}.lead{color:#91A3B4;font-size:14px;line-height:1.7}.panel{background:linear-gradient(145deg,#131e2b,#0e1621);border:1px solid var(--line);border-radius:9px;padding:clamp(18px,4vw,30px);margin-top:22px}.panel-title{color:var(--cyan);font-size:10px;letter-spacing:.18em;margin-bottom:18px}.notice{border:1px solid #34485C;background:#0A111B;border-radius:6px;padding:15px;color:#AFC0CF;font-size:13px;line-height:1.7}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}button{border:1px solid var(--cyan);border-radius:5px;background:#153744;color:#9CEBF1;padding:15px 20px;font-size:11px;letter-spacing:.13em;font-weight:600;cursor:pointer}button:hover{background:#1c4b5a}button:disabled{opacity:.35;cursor:not-allowed}.primary{flex:1}.hidden{display:none!important}.video-shell{position:relative;width:100%;aspect-ratio:16/9;background:#000;border:1px solid #34485C;border-radius:7px;overflow:hidden}.video-shell iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.video-cover{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#080d14;color:#a9bac8;text-align:center;padding:22px;font-size:13px;line-height:1.6}.monitor{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:11px;letter-spacing:.1em;margin:15px 0}.press-area{display:grid;gap:12px;margin-top:18px}.press-button{min-height:78px;font-size:clamp(13px,2.5vw,16px);letter-spacing:.1em}.counter{text-align:center;color:#AFC0CF;font-size:12px}.feedback{min-height:18px;color:#FFCF8B;font-size:11px;text-align:center;margin-top:8px}footer{border-top:1px solid var(--line);padding:24px 6%;display:flex;justify-content:space-between;gap:10px;color:#62778A;font-size:9px;letter-spacing:.12em}@media(max-width:600px){header{padding:0 4%}.header-right{font-size:9px}main{margin:30px auto}footer{flex-direction:column}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="symbol"></div>COGNITIVE RESEARCH SYSTEM</div><div class="header-right">CR—01 / TASK 03</div></header>
+<main>
+<div class="overline">EXPERIMENTAL TASK / MENTALIZATION SELF-REPORT</div>
+<h1>Osservazione e interpretazione.</h1>
+<p class="lead" id="participantLine"></p>
+<section class="panel" id="instructions">
+<div class="panel-title">ISTRUZIONI</div>
+<div class="notice">
+  Tra poco vedrai un breve filmato. Guardalo con attenzione fino alla fine, senza interromperlo.
+  <br><br>
+  Ogni volta che, mentre osservi il filmato, ti accorgi di aver attribuito a una delle persone rappresentate un'intenzione, un'emozione, un pensiero, una motivazione o un altro stato mentale, premi il pulsante <strong>«Ho formulato un'interpretazione»</strong>.
+  <br><br>
+  Puoi premere il pulsante più volte, ogni volta che riconosci una nuova attribuzione. Non devi contare mentalmente gli episodi: il sistema registrerà ogni pressione. Non esistono risposte giuste o sbagliate. Continua a guardare il filmato anche dopo aver premuto.
+  <br><br>
+  Il pulsante sarà attivo soltanto durante la riproduzione. Avvia il filmato quando sei pronto.
+</div>
+<div class="actions"><button class="primary" id="startVideo">AVVIA IL FILMATO →</button></div>
+</section>
+<section class="panel hidden" id="playerPanel">
+<div class="panel-title">VIDEO STIMULUS / ALMOST</div>
+<div class="video-shell"><div id="player"></div><div class="video-cover" id="videoCover">Preparazione del filmato…</div></div>
+<div class="monitor"><span id="playState">IN ATTESA DELLA RIPRODUZIONE</span><span id="elapsed">00:00</span></div>
+<div class="press-area"><button class="press-button" id="mentalize" disabled>HO FORMULATO UN'INTERPRETAZIONE</button><div class="counter" id="counter">Rilevazioni: 0</div><div class="feedback" id="feedback" aria-live="polite"></div></div>
+</section>
+<section class="panel hidden" id="complete">
+<div class="panel-title">FILMATO COMPLETATO</div><h2>Grazie. La prova è terminata.</h2>
+<p class="lead">Scarica il file dei risultati prima di proseguire. Il numero di pressioni rappresenta gli episodi di attribuzione mentalistica che hai riconosciuto e segnalato durante la visione.</p>
+<div class="notice" id="summary"></div>
+<div class="actions"><button class="primary" id="download">SCARICA RISULTATI CSV ↓</button><button id="continue">FINE SESSIONE</button></div>
+</section>
+</main>
+<footer><span>CR—01 / COGNITIVE RESEARCH</span><span>ALMOST · AUTORILEVAZIONE DURANTE LA VISIONE</span></footer>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+const VIDEO_ID="7fQtVnOISVk";
+const participant=sessionStorage.getItem("participant")||"";
+const profile=JSON.parse(sessionStorage.getItem("participantProfile")||"null");
+const order=sessionStorage.getItem("taskOrder")||"houde_first";
+document.getElementById("participantLine").textContent=participant?"CODICE PARTECIPANTE: "+participant:"CODICE PARTECIPANTE NON DISPONIBILE";
+let player=null,playerReady=false,started=false,ended=false,startPerf=0,startWall="",presses=[],pauseAttempts=0,seekAnomalies=0,lastObservedTime=0,lastObservedPerf=0,monitorTimer=null;
+if(!participant||!profile){document.getElementById("instructions").innerHTML='<div class="notice">Profilo partecipante non trovato. Torna alla pagina iniziale e completa l\'accesso.</div><div class="actions"><button onclick="location.href=\'index.html\'">TORNA ALL’ACCESSO</button></div>';}
+window.onYouTubeIframeAPIReady=function(){
+ player=new YT.Player("player",{videoId:VIDEO_ID,playerVars:{autoplay:0,controls:0,disablekb:1,fs:0,playsinline:1,rel:0,modestbranding:1,iv_load_policy:3},events:{onReady:()=>{playerReady=true;document.getElementById("videoCover").textContent="Filmato pronto. Premi «Avvia il filmato» per iniziare.";},onStateChange:onPlayerState}});
+};
+document.getElementById("startVideo").addEventListener("click",()=>{
+ if(!playerReady||started)return;
+ started=true;
+ document.getElementById("instructions").classList.add("hidden");
+ document.getElementById("playerPanel").classList.remove("hidden");
+ document.getElementById("videoCover").classList.add("hidden");
+ player.playVideo();
+});
+function onPlayerState(event){
+ if(event.data===YT.PlayerState.PLAYING){
+  if(!startPerf){startPerf=performance.now();startWall=new Date().toISOString();lastObservedPerf=startPerf;lastObservedTime=player.getCurrentTime()||0;monitorTimer=setInterval(monitorPlayback,500);}
+  document.getElementById("playState").textContent="RIPRODUZIONE IN CORSO";
+  document.getElementById("mentalize").disabled=false;
+ }else if(event.data===YT.PlayerState.PAUSED && started && !ended){
+  pauseAttempts++;
+  document.getElementById("playState").textContent="INTERRUZIONE RILEVATA";
+  document.getElementById("mentalize").disabled=true;
+  document.getElementById("feedback").textContent="È stata rilevata un'interruzione. La riproduzione riprenderà automaticamente.";
+  setTimeout(()=>{if(started&&!ended&&player&&player.getPlayerState()===YT.PlayerState.PAUSED)player.playVideo();},150);
+ }else if(event.data===YT.PlayerState.ENDED){finish();}
+}
+function monitorPlayback(){
+ if(!started||ended||!player)return;
+ const now=performance.now(),t=player.getCurrentTime()||0,dt=(now-lastObservedPerf)/1000,expected=lastObservedTime+dt;
+ if(t<lastObservedTime-1.2||t>expected+3.5)seekAnomalies++;
+ lastObservedTime=t;lastObservedPerf=now;
+ document.getElementById("elapsed").textContent=formatTime(t);
+}
+function formatTime(s){s=Math.max(0,Math.floor(s||0));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");}
+document.getElementById("mentalize").addEventListener("click",()=>{
+ if(!started||ended||!player||player.getPlayerState()!==YT.PlayerState.PLAYING)return;
+ const now=performance.now(),videoTime=player.getCurrentTime()||0;
+ presses.push({event_number:presses.length+1,elapsed_ms:Math.round(now-startPerf),video_time_s:Math.round(videoTime*1000)/1000,wall_time:new Date().toISOString()});
+ document.getElementById("counter").textContent="Rilevazioni: "+presses.length;
+ document.getElementById("feedback").textContent="Rilevazione registrata.";
+});
+function finish(){
+ if(ended)return;ended=true;if(monitorTimer)clearInterval(monitorTimer);
+ document.getElementById("mentalize").disabled=true;document.getElementById("playState").textContent="RIPRODUZIONE COMPLETATA";
+ document.getElementById("playerPanel").classList.add("hidden");document.getElementById("complete").classList.remove("hidden");
+ const duration=player&&player.getDuration?player.getDuration():0;
+ const record={participant_id:participant,profile,task:"almost_mentalization_self_detection",video_id:VIDEO_ID,task_order:order,video_started_at:startWall,video_duration_s:duration,press_count:presses.length,presses,pause_attempts:pauseAttempts,seek_anomalies:seekAnomalies,completed_at:new Date().toISOString(),delivery:"youtube_iframe_best_effort"};
+ localStorage.setItem("CR01_"+participant+"_ALMOST",JSON.stringify(record));
+ document.getElementById("summary").textContent="Pressioni registrate: "+presses.length+" · Durata video: "+formatTime(duration)+" · Interruzioni rilevate: "+pauseAttempts+" · Anomalie di avanzamento rilevate: "+seekAnomalies+".";
+}
+document.getElementById("download").addEventListener("click",()=>{
+ const header=["participant_id","task","video_id","task_order","event_number","elapsed_ms","video_time_s","wall_time","press_count_total","pause_attempts","seek_anomalies"];
+ const data=presses.length?presses.map(p=>[participant,"almost_mentalization_self_detection",VIDEO_ID,order,p.event_number,p.elapsed_ms,p.video_time_s,p.wall_time,presses.length,pauseAttempts,seekAnomalies]):[[participant,"almost_mentalization_self_detection",VIDEO_ID,order,"","","","",0,pauseAttempts,seekAnomalies]];
+ const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+ const csv=[header.map(q).join(","),...data.map(r=>r.map(q).join(","))].join("\r\n");
+ const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="CR01_"+participant+"_ALMOST.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+});
+document.getElementById("continue").addEventListener("click",()=>{document.getElementById("summary").textContent+=" Sessione completata.";});
+</script>
+</body></html>
