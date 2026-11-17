@@ -25,7 +25,7 @@ h1{font-size:clamp(30px,5vw,44px);font-weight:500;letter-spacing:-.04em;margin:1
 .card{min-height:155px;border:2px solid #34485C;border-radius:10px;background:#0A111B;color:var(--white);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:15px;transition:.15s}
 .card:hover{border-color:#6C879D;transform:translateY(-2px)}
 .card.selected{border-color:var(--cyan);background:#12303A;box-shadow:0 0 0 2px #58D9E822}
-.card-symbol{font-size:48px;line-height:1}
+.card-symbol{font-size:48px;line-height:1;color:#EDF4FA}.color-swatch{width:54px;height:54px;border-radius:9px;border:1px solid #ffffff55;display:block}
 .card-label{font-size:12px;color:#C5D3DE;text-align:center}
 .card.selected .card-label{color:#BDF6F8}
 .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
@@ -41,7 +41,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .feedback{min-height:22px;color:#FFCF8B;font-size:12px;margin-top:12px}
 .hidden{display:none!important}
 footer{border-top:1px solid var(--line);padding:24px 6%;display:flex;justify-content:space-between;gap:10px;color:#62778A;font-size:9px;letter-spacing:.12em}
-@media(max-width:600px){header{padding:0 4%}.header-right{font-size:9px}main{margin:30px auto}.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card{min-height:130px}.card-symbol{font-size:42px}footer{flex-direction:column}}
+@media(max-width:600px){header{padding:0 4%}.header-right{font-size:9px}main{margin:30px auto}.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card{min-height:130px}.card-symbol{font-size:42px}.color-swatch{width:48px;height:48px}footer{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -103,45 +103,45 @@ document.getElementById("participantShort").textContent = participant;
 const trials = [
   {
     id:"H01",
-    rule:"Se una carta non presenta un quadrato rosso su una faccia, allora presenta un cerchio giallo sull'altra faccia.",
+    rule:"Se su una faccia di una carta non è presente un quadrato, sull'altra faccia è presente il colore giallo.",
     cards:[
-      {role:"P",label:"Quadrato rosso",symbol:"■",color:"#F04444"},
-      {role:"notP",label:"Triangolo blu",symbol:"▲",color:"#54A6F6"},
-      {role:"Q",label:"Cerchio giallo",symbol:"●",color:"#F2C94C"},
-      {role:"notQ",label:"Rombo verde",symbol:"◆",color:"#43C78B"}
+      {role:"P",kind:"shape",label:"Quadrato",symbol:"■",color:"#EDF4FA"},
+      {role:"notP",kind:"shape",label:"Triangolo",symbol:"▲",color:"#EDF4FA"},
+      {role:"Q",kind:"color",label:"Giallo",color:"#F2C94C"},
+      {role:"notQ",kind:"color",label:"Blu",color:"#54A6F6"}
     ],
     correct:["notP","notQ"]
   },
   {
     id:"H02",
-    rule:"Se una carta non presenta un cerchio viola su una faccia, allora presenta un rombo arancione sull'altra faccia.",
+    rule:"Se su una faccia di una carta non è presente un cerchio, sull'altra faccia è presente il colore arancione.",
     cards:[
-      {role:"P",label:"Cerchio viola",symbol:"●",color:"#B28AF5"},
-      {role:"notP",label:"Quadrato giallo",symbol:"■",color:"#F2C94C"},
-      {role:"Q",label:"Rombo arancione",symbol:"◆",color:"#F39A45"},
-      {role:"notQ",label:"Triangolo azzurro",symbol:"▲",color:"#54C7E8"}
+      {role:"P",kind:"shape",label:"Cerchio",symbol:"●",color:"#EDF4FA"},
+      {role:"notP",kind:"shape",label:"Rombo",symbol:"◆",color:"#EDF4FA"},
+      {role:"Q",kind:"color",label:"Arancione",color:"#F39A45"},
+      {role:"notQ",kind:"color",label:"Viola",color:"#B28AF5"}
     ],
     correct:["notP","notQ"]
   },
   {
     id:"H03",
-    rule:"Se una carta non presenta un triangolo verde su una faccia, allora presenta una stella rossa sull'altra faccia.",
+    rule:"Se su una faccia di una carta non è presente un triangolo, sull'altra faccia è presente il colore rosso.",
     cards:[
-      {role:"P",label:"Triangolo verde",symbol:"▲",color:"#43C78B"},
-      {role:"notP",label:"Cerchio blu",symbol:"●",color:"#54A6F6"},
-      {role:"Q",label:"Stella rossa",symbol:"★",color:"#F04444"},
-      {role:"notQ",label:"Quadrato viola",symbol:"■",color:"#B28AF5"}
+      {role:"P",kind:"shape",label:"Triangolo",symbol:"▲",color:"#EDF4FA"},
+      {role:"notP",kind:"shape",label:"Esagono",symbol:"⬢",color:"#EDF4FA"},
+      {role:"Q",kind:"color",label:"Rosso",color:"#F04444"},
+      {role:"notQ",kind:"color",label:"Verde",color:"#43C78B"}
     ],
     correct:["notP","notQ"]
   },
   {
     id:"H04",
-    rule:"Se una carta non presenta un esagono azzurro su una faccia, allora presenta una croce gialla sull'altra faccia.",
+    rule:"Se su una faccia di una carta non è presente un esagono, sull'altra faccia è presente il colore viola.",
     cards:[
-      {role:"P",label:"Esagono azzurro",symbol:"⬢",color:"#54C7E8"},
-      {role:"notP",label:"Stella arancione",symbol:"★",color:"#F39A45"},
-      {role:"Q",label:"Croce gialla",symbol:"✚",color:"#F2C94C"},
-      {role:"notQ",label:"Cerchio verde",symbol:"●",color:"#43C78B"}
+      {role:"P",kind:"shape",label:"Esagono",symbol:"⬢",color:"#EDF4FA"},
+      {role:"notP",kind:"shape",label:"Stella",symbol:"★",color:"#EDF4FA"},
+      {role:"Q",kind:"color",label:"Viola",color:"#B28AF5"},
+      {role:"notQ",kind:"color",label:"Giallo",color:"#F2C94C"}
     ],
     correct:["notP","notQ"]
   }
@@ -194,7 +194,9 @@ function showTrial(){
     button.className="card";
     button.dataset.role=card.role;
     button.setAttribute("aria-pressed","false");
-    button.innerHTML='<span class="card-symbol" style="color:'+card.color+'">'+card.symbol+'</span><span class="card-label">'+card.label+'</span>';
+    button.innerHTML = card.kind==="color"
+      ? '<span class="color-swatch" style="background:'+card.color+'"></span><span class="card-label">'+card.label+'</span>'
+      : '<span class="card-symbol">'+card.symbol+'</span><span class="card-label">'+card.label+'</span>';
     button.addEventListener("click",()=>{
       const now=Math.round(performance.now()-trialStart);
       if(selected.has(card.role)){
