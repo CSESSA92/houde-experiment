@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090D16">
+<title>CR-01 | Ragionamento condizionale</title>
+<style>
+:root{--bg:#090D16;--panel:#111A27;--line:#26384A;--cyan:#58D9E8;--white:#EDF4FA;--muted:#8295A8}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#14283a 0%,transparent 52%),var(--bg);color:var(--white);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{height:68px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 6%}
+.brand{display:flex;align-items:center;gap:12px;font-size:10px;letter-spacing:.19em;color:#A6B8C8;font-weight:600}
+.symbol{width:11px;height:11px;border:2px solid var(--cyan);transform:rotate(45deg);box-shadow:0 0 12px #58D9E866}
+.header-right{font-size:10px;color:var(--muted);letter-spacing:.12em}
+main{width:min(850px,92%);margin:42px auto 60px}
+.overline{color:var(--cyan);font-size:10px;letter-spacing:.23em}
+h1{font-size:clamp(30px,5vw,44px);font-weight:500;letter-spacing:-.04em;margin:14px 0}
+.lead{color:#91A3B4;font-size:14px;line-height:1.7}
+.panel{background:linear-gradient(145deg,#131e2b,#0e1621);border:1px solid var(--line);border-radius:9px;padding:clamp(18px,4vw,30px);margin-top:22px}
+.panel-title{color:var(--cyan);font-size:10px;letter-spacing:.18em;margin-bottom:18px}
+.notice{border:1px solid #34485C;background:#0A111B;border-radius:6px;padding:15px;color:#AFC0CF;font-size:13px;line-height:1.7}
+.rule{font-size:clamp(18px,3vw,23px);line-height:1.55;color:var(--white);padding:20px 0;text-align:center}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:22px 0}
+.card{min-height:155px;border:2px solid #34485C;border-radius:10px;background:#0A111B;color:var(--white);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:15px;transition:.15s}
+.card:hover{border-color:#6C879D;transform:translateY(-2px)}
+.card.selected{border-color:var(--cyan);background:#12303A;box-shadow:0 0 0 2px #58D9E822}
+.card-symbol{font-size:48px;line-height:1}
+.card-label{font-size:12px;color:#C5D3DE;text-align:center}
+.card.selected .card-label{color:#BDF6F8}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+button{border:1px solid var(--cyan);border-radius:5px;background:#153744;color:#9CEBF1;padding:15px 20px;font-size:11px;letter-spacing:.13em;font-weight:600;cursor:pointer}
+button:hover{background:#1c4b5a}
+button.secondary{background:transparent;border-color:#34485C;color:#AFC0CF}
+button:disabled{opacity:.45;cursor:not-allowed}
+.primary{flex:1}
+.progress{display:flex;gap:6px;margin:18px 0}
+.progress span{height:4px;flex:1;background:#26384A;border-radius:4px}
+.progress span.done{background:var(--cyan)}
+.meta{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:11px;letter-spacing:.08em}
+.feedback{min-height:22px;color:#FFCF8B;font-size:12px;margin-top:12px}
+.hidden{display:none!important}
+footer{border-top:1px solid var(--line);padding:24px 6%;display:flex;justify-content:space-between;gap:10px;color:#62778A;font-size:9px;letter-spacing:.12em}
+@media(max-width:600px){header{padding:0 4%}.header-right{font-size:9px}main{margin:30px auto}.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card{min-height:130px}.card-symbol{font-size:42px}footer{flex-direction:column}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="symbol"></div>COGNITIVE RESEARCH SYSTEM</div>
+  <div class="header-right">CR—01 / TASK 01</div>
+</header>
+<main>
+  <div class="overline">EXPERIMENTAL TASK / CONDITIONAL REASONING</div>
+  <h1>Verifica della regola.</h1>
+  <p class="lead" id="participantLine"></p>
+
+  <section class="panel" id="instructions">
+    <div class="panel-title">ISTRUZIONI</div>
+    <div class="notice">
+      In ogni prova vedrai una regola e quattro carte. Ogni carta ha due facce: sullo schermo è visibile soltanto una faccia, mentre l'altra è nascosta.
+      <br><br>
+      Seleziona tutte e sole le carte che ritieni necessario girare per verificare se la regola può essere violata. Non devi stabilire se la regola sia vera nella realtà: devi valutare quali carte permettono di controllarla.
+      <br><br>
+      Puoi selezionare e deselezionare le carte prima di confermare. Non riceverai indicazioni sulla correttezza delle risposte.
+    </div>
+    <div class="actions"><button class="primary" id="begin">INIZIA LA PROVA →</button></div>
+  </section>
+
+  <section class="panel hidden" id="task">
+    <div class="meta"><span id="trialLabel">PROVA 1 / 4</span><span id="participantShort"></span></div>
+    <div class="progress" id="progress"></div>
+    <div class="rule" id="rule"></div>
+    <div class="notice">Seleziona le carte da girare. Puoi selezionare più carte.</div>
+    <div class="cards" id="cards"></div>
+    <div class="feedback" id="feedback" aria-live="polite"></div>
+    <div class="actions">
+      <button class="secondary" id="clear">ANNULLA SELEZIONI</button>
+      <button class="primary" id="confirm" disabled>CONFERMA RISPOSTA →</button>
+    </div>
+  </section>
+
+  <section class="panel hidden" id="complete">
+    <div class="panel-title">SESSIONE COMPLETATA</div>
+    <h2>La prova è terminata.</h2>
+    <p class="lead">Le risposte sono state registrate in questa sessione del browser. Scarica il file dei risultati e consegnalo al ricercatore secondo le modalità concordate.</p>
+    <div class="notice" id="resultSummary"></div>
+    <div class="actions">
+      <button class="primary" id="download">SCARICA RISULTATI CSV ↓</button>
+    </div>
+    <p class="feedback">Non chiudere la pagina prima di aver scaricato il file.</p>
+  </section>
+</main>
+<footer><span>CR—01 / COGNITIVE RESEARCH</span><span>RAGIONAMENTO CONDIZIONALE · VERSIONE DI SVILUPPO</span></footer>
+<script>
+const participant = sessionStorage.getItem("participant") || "";
+const profile = JSON.parse(sessionStorage.getItem("participantProfile") || "null");
+if (!participant || !profile) {
+  document.getElementById("instructions").innerHTML = '<div class="notice">Profilo partecipante non trovato. Torna alla pagina iniziale e completa l'accesso.</div><div class="actions"><button onclick="location.href=\'index.html\'">TORNA ALL’ACCESSO</button></div>';
+}
+document.getElementById("participantLine").textContent = participant ? "CODICE PARTECIPANTE: " + participant : "ACCESSO NON DISPONIBILE";
+document.getElementById("participantShort").textContent = participant;
+
+const trials = [
+  {
+    id:"H01",
+    rule:"Se una carta non presenta un quadrato rosso su una faccia, allora presenta un cerchio giallo sull'altra faccia.",
+    cards:[
+      {role:"P",label:"Quadrato rosso",symbol:"■",color:"#F04444"},
+      {role:"notP",label:"Triangolo blu",symbol:"▲",color:"#54A6F6"},
+      {role:"Q",label:"Cerchio giallo",symbol:"●",color:"#F2C94C"},
+      {role:"notQ",label:"Rombo verde",symbol:"◆",color:"#43C78B"}
+    ],
+    correct:["notP","notQ"]
+  },
+  {
+    id:"H02",
+    rule:"Se una carta non presenta un cerchio viola su una faccia, allora presenta un rombo arancione sull'altra faccia.",
+    cards:[
+      {role:"P",label:"Cerchio viola",symbol:"●",color:"#B28AF5"},
+      {role:"notP",label:"Quadrato giallo",symbol:"■",color:"#F2C94C"},
+      {role:"Q",label:"Rombo arancione",symbol:"◆",color:"#F39A45"},
+      {role:"notQ",label:"Triangolo azzurro",symbol:"▲",color:"#54C7E8"}
+    ],
+    correct:["notP","notQ"]
+  },
+  {
+    id:"H03",
+    rule:"Se una carta non presenta un triangolo verde su una faccia, allora presenta una stella rossa sull'altra faccia.",
+    cards:[
+      {role:"P",label:"Triangolo verde",symbol:"▲",color:"#43C78B"},
+      {role:"notP",label:"Cerchio blu",symbol:"●",color:"#54A6F6"},
+      {role:"Q",label:"Stella rossa",symbol:"★",color:"#F04444"},
+      {role:"notQ",label:"Quadrato viola",symbol:"■",color:"#B28AF5"}
+    ],
+    correct:["notP","notQ"]
+  },
+  {
+    id:"H04",
+    rule:"Se una carta non presenta un esagono azzurro su una faccia, allora presenta una croce gialla sull'altra faccia.",
+    cards:[
+      {role:"P",label:"Esagono azzurro",symbol:"⬢",color:"#54C7E8"},
+      {role:"notP",label:"Stella arancione",symbol:"★",color:"#F39A45"},
+      {role:"Q",label:"Croce gialla",symbol:"✚",color:"#F2C94C"},
+      {role:"notQ",label:"Cerchio verde",symbol:"●",color:"#43C78B"}
+    ],
+    correct:["notP","notQ"]
+  }
+];
+
+function shuffle(items){
+  const a = [...items];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+const orderedTrials = shuffle(trials);
+let trialIndex = 0;
+let currentTrial = null;
+let visibleCards = [];
+let selected = new Set();
+let selectionEvents = [];
+let trialStart = 0;
+let results = [];
+const device = /iPad|Tablet|Android/i.test(navigator.userAgent) ? "tablet_or_mobile" : "computer";
+
+document.getElementById("begin").addEventListener("click",()=>{
+  document.getElementById("instructions").classList.add("hidden");
+  document.getElementById("task").classList.remove("hidden");
+  showTrial();
+});
+function showTrial(){
+  currentTrial=orderedTrials[trialIndex];
+  selected=new Set();
+  selectionEvents=[];
+  visibleCards=shuffle(currentTrial.cards);
+  trialStart=performance.now();
+  document.getElementById("trialLabel").textContent="PROVA "+(trialIndex+1)+" / "+orderedTrials.length;
+  document.getElementById("rule").textContent=currentTrial.rule;
+  document.getElementById("feedback").textContent="";
+  document.getElementById("confirm").disabled=true;
+  document.getElementById("progress").innerHTML="";
+  for(let i=0;i<orderedTrials.length;i++){
+    const s=document.createElement("span");
+    if(i<trialIndex)s.className="done";
+    document.getElementById("progress").appendChild(s);
+  }
+  const container=document.getElementById("cards");
+  container.innerHTML="";
+  visibleCards.forEach((card,index)=>{
+    const button=document.createElement("button");
+    button.type="button";
+    button.className="card";
+    button.dataset.role=card.role;
+    button.setAttribute("aria-pressed","false");
+    button.innerHTML='<span class="card-symbol" style="color:'+card.color+'">'+card.symbol+'</span><span class="card-label">'+card.label+'</span>';
+    button.addEventListener("click",()=>{
+      const now=Math.round(performance.now()-trialStart);
+      if(selected.has(card.role)){
+        selected.delete(card.role);
+        button.classList.remove("selected");
+        button.setAttribute("aria-pressed","false");
+        selectionEvents.push({role:card.role,action:"deselected",time_ms:now,position:index+1});
+      }else{
+        selected.add(card.role);
+        button.classList.add("selected");
+        button.setAttribute("aria-pressed","true");
+        selectionEvents.push({role:card.role,action:"selected",time_ms:now,position:index+1});
+      }
+      document.getElementById("confirm").disabled=selected.size===0;
+      document.getElementById("feedback").textContent=selected.size+" carte selezionate";
+    });
+    container.appendChild(button);
+  });
+}
+document.getElementById("clear").addEventListener("click",()=>{
+  selected.clear();
+  document.querySelectorAll(".card").forEach(button=>{
+    button.classList.remove("selected");
+    button.setAttribute("aria-pressed","false");
+  });
+  document.getElementById("confirm").disabled=true;
+  document.getElementById("feedback").textContent="Selezioni annullate.";
+});
+document.getElementById("confirm").addEventListener("click",()=>{
+  const responseTime=Math.round(performance.now()-trialStart);
+  const chosen=[...selected];
+  const correct=chosen.length===2 && currentTrial.correct.every(x=>selected.has(x));
+  results.push({
+    participant_id:participant,
+    task:"wason_selection_adaptation",
+    item_id:currentTrial.id,
+    presentation_order:trialIndex+1,
+    rule:currentTrial.rule,
+    visible_card_order:visibleCards.map(c=>c.role+":"+c.label).join("|"),
+    selected_roles:chosen.join("|"),
+    selected_labels:visibleCards.filter(c=>selected.has(c.role)).map(c=>c.label).join("|"),
+    correct_roles:currentTrial.correct.join("|"),
+    exact_response_correct:correct?1:0,
+    selected_count:chosen.length,
+    response_time_ms:responseTime,
+    selection_sequence:selectionEvents.map(e=>e.role+":"+e.action+"@"+e.time_ms).join("|"),
+    device_type:device,
+    completed_at:new Date().toISOString()
+  });
+  trialIndex++;
+  if(trialIndex<orderedTrials.length) showTrial();
+  else finish();
+});
+function finish(){
+  document.getElementById("task").classList.add("hidden");
+  document.getElementById("complete").classList.remove("hidden");
+  const score=results.reduce((sum,r)=>sum+r.exact_response_correct,0);
+  document.getElementById("resultSummary").textContent=
+    "Prove completate: "+results.length+" su "+orderedTrials.length+
+    " · Risposte esattamente corrette: "+score+
+    " · Codice partecipante: "+participant+
+    ". Il punteggio è descrittivo e non costituisce una misura standardizzata dell'inibizione cognitiva.";
+  const record={participant_id:participant,profile:profile,task:"wason_selection_adaptation",results:results};
+  localStorage.setItem("CR01_"+participant+"_HOUDE",JSON.stringify(record));
+}
+document.getElementById("download").addEventListener("click",()=>{
+  const columns=Object.keys(results[0]||{});
+  const quote=value=>'"'+String(value??"").replace(/"/g,'""')+'"';
+  const csv=[columns.map(quote).join(","),...results.map(row=>columns.map(key=>quote(row[key])).join(","))].join("\r\n");
+  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="CR01_"+participant+"_HOUDE.csv";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+</script>
+</body>
+</html>
