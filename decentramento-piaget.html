@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prototipo – Decentramento spaziale</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#151d31;--line:#2c3853;--text:#eef3ff;--muted:#a9b6ce;--accent:#75d6bd}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,sans-serif}
+main{max-width:1100px;margin:auto;padding:28px 18px 50px}h1{font-size:clamp(1.5rem,3vw,2.2rem);margin:0 0 8px}
+p{color:var(--muted)}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin:18px 0}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button,select{background:#202c45;color:var(--text);border:1px solid #405170;border-radius:10px;padding:11px 14px;font:inherit;cursor:pointer}
+button:hover,button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:#176b5a;border-color:#278d76}
+#stage{width:100%;height:430px;border-radius:12px;overflow:hidden;background:linear-gradient(#17243a,#0d1424)}
+#choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}
+.choice{padding:8px;background:#10182a;border:2px solid var(--line);border-radius:12px;text-align:center}
+.choice canvas{width:100%;height:145px;display:block;border-radius:7px;background:#0d1424}
+.choice button{width:100%;margin-top:8px}
+.note{font-size:.9rem;color:var(--muted)}#feedback{min-height:30px;font-weight:600;color:var(--accent)}
+@media(max-width:680px){#stage{height:330px}#choices{grid-template-columns:repeat(2,minmax(0,1fr))}.choice canvas{height:130px}}
+</style>
+</head>
+<body>
+<main>
+<h1>Decentramento spaziale – prototipo interattivo</h1>
+<p>Simulazione esplorativa per la progettazione della prova. Non è un test validato e non raccoglie né trasmette dati.</p>
+<section class="panel">
+<div class="toolbar">
+<label for="model">Modello:</label>
+<select id="model"><option value="mountains">Tre montagne</option><option value="classroom">Aula scolastica</option></select>
+<label for="observer">Posizione dell'osservatore:</label>
+<select id="observer"><option value="1">Lato opposto</option><option value="2">Lato destro</option><option value="3">Lato sinistro</option></select>
+<button id="reset">Ripristina vista</button>
+</div>
+<div id="stage" aria-label="Modello tridimensionale interattivo"></div>
+<p class="note">La vista grande rappresenta il punto di osservazione del partecipante. Le quattro immagini sottostanti sono generate dalla stessa scena tridimensionale, da posizioni differenti.</p>
+</section>
+<section class="panel">
+<h2>Quale immagine corrisponde alla visuale dell'osservatore indicato?</h2>
+<p>Osserva la posizione dell'omino sul modello e scegli la prospettiva che corrisponde a ciò che può vedere.</p>
+<div id="choices"></div>
+<div id="feedback" role="status" aria-live="polite"></div>
+</section>
+<p class="note">Nota metodologica: questo è un prototipo tecnico. Prima di un eventuale impiego nella raccolta dati occorrerà definire il paradigma, verificare la geometria delle prospettive, controllare la difficoltà degli item e svolgere un pilotaggio.</p>
+</main>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+const stage=document.querySelector('#stage'), choices=document.querySelector('#choices');
+const modelSelect=document.querySelector('#model'), observerSelect=document.querySelector('#observer');
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(stage.clientWidth,stage.clientHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;stage.appendChild(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x111b2e);
+const mainCamera=new THREE.PerspectiveCamera(42,stage.clientWidth/stage.clientHeight,.1,100);mainCamera.position.set(0,9,14);mainCamera.lookAt(0,1,0);
+scene.add(new THREE.HemisphereLight(0xddeaff,0x26334a,2));
+const light=new THREE.DirectionalLight(0xffffff,2.2);light.position.set(-5,10,7);scene.add(light);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(24,24),new THREE.MeshStandardMaterial({color:0x26344a,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.06;scene.add(floor);
+let modelGroup=new THREE.Group();scene.add(modelGroup);let markers=[];
+function mat(color){return new THREE.MeshStandardMaterial({color,roughness:.82})}
+function mountain(x,z,r,h,color,topColor){
+ const g=new THREE.Group();const body=new THREE.Mesh(new THREE.ConeGeometry(r,h,5),mat(color));body.position.y=h/2;g.add(body);
+ const cap=new THREE.Mesh(new THREE.ConeGeometry(r*.34,h*.28,5),mat(topColor));cap.position.y=h*.78;g.add(cap);g.position.set(x,0,z);modelGroup.add(g);
+}
+function tree(x,z){const g=new THREE.Group();let trunk=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,.65,7),mat(0x795239));trunk.position.y=.32;g.add(trunk);let crown=new THREE.Mesh(new THREE.SphereGeometry(.42,10,8),mat(0x39835d));crown.position.y=.88;g.add(crown);g.position.set(x,0,z);modelGroup.add(g)}
+function house(x,z){const g=new THREE.Group();let b=new THREE.Mesh(new THREE.BoxGeometry(.9,.65,.75),mat(0xe2cda5));b.position.y=.33;g.add(b);let roof=new THREE.Mesh(new THREE.ConeGeometry(.72,.48,4),mat(0x9d554b));roof.position.y=.88;roof.rotation.y=Math.PI/4;g.add(roof);g.position.set(x,0,z);modelGroup.add(g)}
+function desk(x,z,rot=0){const g=new THREE.Group();const top=new THREE.Mesh(new THREE.BoxGeometry(1.35,.12,.8),mat(0xb98a55));top.position.y=.9;g.add(top);for(const dx of [-.52,.52])for(const dz of [-.27,.27]){const leg=new THREE.Mesh(new THREE.BoxGeometry(.08,.88,.08),mat(0x72543a));leg.position.set(dx,.44,dz);g.add(leg)}g.position.set(x,0,z);g.rotation.y=rot;modelGroup.add(g)}
+function clear(){while(modelGroup.children.length){const o=modelGroup.children.pop();o.traverse?.(n=>{n.geometry?.dispose();if(n.material){if(Array.isArray(n.material))n.material.forEach(m=>m.dispose());else n.material.dispose()}})}markers=[]}
+function build(){
+ clear();
+ if(modelSelect.value==='mountains'){
+  mountain(-3,-1.3,1.45,3.6,0x8b6251,0xe9d6c2);
+  mountain(.2,-2.1,1.15,2.55,0x668c72,0xd8e6d3);
+  mountain(2.9,-.3,1.35,3.15,0x657da7,0xd9e3f2);
+  tree(-3.9,1.4);house(2.7,1.55);
+ }else{
+  const walls=new THREE.Mesh(new THREE.BoxGeometry(8,3.3,.18),mat(0x52637b));walls.position.set(0,1.6,-3.2);modelGroup.add(walls);
+  const board=new THREE.Mesh(new THREE.BoxGeometry(3.2,1.45,.08),mat(0x244d4b));board.position.set(0,2,-3.08);modelGroup.add(board);
+  desk(-2,-1,0);desk(0,-1,0);desk(2,-1,0);desk(-1,1,.2);desk(1,1,-.2);
+  const cab=new THREE.Mesh(new THREE.BoxGeometry(.8,1.8,.65),mat(0xb58b60));cab.position.set(3.3,.9,-2.4);modelGroup.add(cab);
+ }
+ // central tabletop/platform
+ const base=new THREE.Mesh(new THREE.BoxGeometry(9,.18,7),mat(0x56647a));base.position.y=-.12;modelGroup.add(base);
+ // observer markers around the model
+ const positions=[[0,0,5.2],[5.2,0,0],[-5.2,0,0],[0,0,-5.2]];
+ positions.forEach((p,i)=>{const group=new THREE.Group();const body=new THREE.Mesh(new THREE.CylinderGeometry(.22,.25,.85,12),mat(i===Number(observerSelect.value)?0xf2c66d:0x9aa9c1));body.position.y=.48;group.add(body);const head=new THREE.Mesh(new THREE.SphereGeometry(.22,12,10),mat(0xe5bd9c));head.position.y=1.05;group.add(head);group.position.set(p[0],0,p[2]);modelGroup.add(group);markers.push(group)});
+}
+const cameraPositions=[[0,8,13],[0,8,-13],[13,8,0],[-13,8,0]];
+function render(){renderer.render(scene,mainCamera)}
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h);mainCamera.aspect=w/h;mainCamera.updateProjectionMatrix();render()}
+window.addEventListener('resize',resize);
+function makeChoices(){
+ choices.innerHTML='';
+ const target=Number(observerSelect.value);const positions=[0,1,2,3];
+ // Shuffle answer order deterministically per current observer; options are genuine views from the same scene.
+ const order=positions.slice();if(target!==0){const t=order.splice(target,1)[0];order.splice((target+1)%4,0,t)}
+ order.forEach((pos,index)=>{
+  const card=document.createElement('div');card.className='choice';
+  const canvas=document.createElement('canvas');canvas.width=360;canvas.height=180;card.appendChild(canvas);
+  const label=document.createElement('div');label.textContent='Prospettiva '+String.fromCharCode(65+index);card.appendChild(label);
+  const r=new THREE.WebGLRenderer({canvas,antialias:true});r.setPixelRatio(1);r.setSize(360,180,false);r.outputColorSpace=THREE.SRGBColorSpace;
+  const cam=new THREE.PerspectiveCamera(48,2,.1,100);cam.position.set(cameraPositions[pos][0],4.2,cameraPositions[pos][2]);cam.lookAt(0,1,0);r.render(scene,cam);
+  const btn=document.createElement('button');btn.textContent='Scegli';btn.addEventListener('click',()=>{document.querySelectorAll('.choice button').forEach(b=>b.disabled=true);document.querySelectorAll('.choice').forEach(c=>c.style.borderColor='var(--line)');card.style.borderColor='var(--accent)';document.querySelector('#feedback').textContent=pos===target?'Hai individuato la prospettiva impostata.':'Questa scelta non corrisponde alla posizione indicata. In questa simulazione puoi riprovare dopo aver cambiato la posizione dell’osservatore.';if(pos!==target){document.querySelectorAll('.choice button').forEach(b=>b.disabled=false)}});card.appendChild(btn);choices.appendChild(card);
+ });
+}
+function refresh(){build();const idx=Number(observerSelect.value);const p=cameraPositions[0];mainCamera.position.set(0,8,13);mainCamera.lookAt(0,1,0);markers.forEach((m,i)=>{m.children[0].material.color.set(i===idx?0xf2c66d:0x9aa9c1)});document.querySelector('#feedback').textContent='';render();makeChoices()}
+modelSelect.addEventListener('change',refresh);observerSelect.addEventListener('change',refresh);
+document.querySelector('#reset').addEventListener('click',()=>{mainCamera.position.set(0,8,13);mainCamera.lookAt(0,1,0);render()});
+let dragging=false,lastX=0,lastY=0;
+renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture(e.pointerId)});
+renderer.domElement.addEventListener('pointerup',()=>dragging=false);
+renderer.domElement.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;const offset=mainCamera.position.clone();const spherical=new THREE.Spherical().setFromVector3(offset);spherical.theta-=dx*.008;spherical.phi=Math.max(.25,Math.min(1.45,spherical.phi+dy*.008));offset.setFromSpherical(spherical);mainCamera.position.copy(offset);mainCamera.lookAt(0,1,0);render()});
+refresh();
+</script>
+</body></html>
