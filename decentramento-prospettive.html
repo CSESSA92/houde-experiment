@@ -37,8 +37,12 @@ function setView(trial,onRotationStart){const d=deskPositions.find(x=>x.id===tri
   function frame(now){if(token!==viewAnimation)return;const raw=Math.min(1,(now-start)/duration),t=raw<.5?4*raw*raw*raw:1-Math.pow(-2*raw+2,3)/2;camera.position.lerpVectors(fromPos,toPos,t);const look=fromTarget.clone().lerp(baseTarget,t);camera.lookAt(look);camera.fov=fromFov+(toFov-fromFov)*t;camera.updateProjectionMatrix();render();if(raw<1)requestAnimationFrame(frame);else{camera.position.copy(toPos);camera.fov=toFov;camera.updateProjectionMatrix();startPanorama(trial,onRotationStart);}}
   requestAnimationFrame(frame);
 }
-function startPanorama(trial,onStart){const duration=5000,half=70*Math.PI/180,start=performance.now(),direction=trial.direction,baseDirection=new THREE.Vector3(0,0,-1);function lookAtYaw(yaw){const v=baseDirection.clone().applyAxisAngle(new THREE.Vector3(0,1,0),yaw);cameraLookTarget=new THREE.Vector3(camera.position.x+v.x*10,camera.position.y+v.y*10,camera.position.z+v.z*10);camera.lookAt(cameraLookTarget);render();}
-  const fromYaw=direction===1?-half:half,toYaw=-fromYaw;lookAtYaw(fromYaw);if(onStart)onStart();const token=++viewAnimation;function frame(now){if(token!==viewAnimation)return;const p=Math.min(1,(now-start)/duration),yaw=fromYaw+(toYaw-fromYaw)*p;lookAtYaw(yaw);if(p<1)requestAnimationFrame(frame);else lookAtYaw(toYaw);}requestAnimationFrame(frame);
+function startPanorama(trial,onStart){const duration=5000,half=70*Math.PI/180,start=performance.now(),direction=trial.direction,baseQuaternion=camera.quaternion.clone(),axis=new THREE.Vector3(0,1,0),yawQuaternion=new THREE.Quaternion();
+  const fromYaw=direction===1?-half:half,toYaw=-fromYaw,token=++viewAnimation;
+  function applyYaw(yaw){yawQuaternion.setFromAxisAngle(axis,yaw);camera.quaternion.copy(yawQuaternion).multiply(baseQuaternion);cameraLookTarget=camera.position.clone().add(new THREE.Vector3(0,0,-10).applyQuaternion(camera.quaternion));render();}
+  applyYaw(fromYaw);if(onStart)onStart();
+  function frame(now){if(token!==viewAnimation)return;const p=Math.min(1,(now-start)/duration),yaw=fromYaw+(toYaw-fromYaw)*p;applyYaw(yaw);if(p<1)requestAnimationFrame(frame);else applyYaw(toYaw);}
+  requestAnimationFrame(frame);
 }
 function shuffle(a){const out=a.slice();for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]];}return out;}
 function makeTrial(bank,direction){return {bank,fov:66,direction};}
