@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prova di decentramento spaziale</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#151d31;--line:#293650;--text:#edf2ff;--muted:#aab6cc;--accent:#78a9ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:1050px;margin:auto;padding:28px 18px 48px}h1{font-size:clamp(1.5rem,3vw,2.2rem);margin:0 0 8px}.sub{color:var(--muted);margin:0 0 22px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin:16px 0}
+#view{width:100%;height:min(58vw,480px);min-height:300px;background:#dce7f2;border-radius:12px;overflow:hidden}
+#view canvas{display:block;width:100%;height:100%}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+button{border:1px solid #526787;background:#202d46;color:var(--text);padding:13px 17px;border-radius:10px;font-weight:650;font-size:1rem;cursor:pointer;min-height:48px}
+button:hover{background:#2b3d5e}button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+button.primary{background:#315b9b;border-color:#477bc4}button:disabled{opacity:.45;cursor:not-allowed}
+.choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+@media(max-width:650px){.choices{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.muted{color:var(--muted)}#feedback{min-height:28px;margin-top:12px;font-weight:600}.hidden{display:none!important}
+.progress{height:7px;background:#293650;border-radius:9px;overflow:hidden;margin:12px 0}.progress>div{height:100%;width:0;background:#78a9ff;transition:width .2s}
+.small{font-size:.9rem;color:var(--muted)}.pill{display:inline-block;border:1px solid var(--line);padding:4px 9px;border-radius:99px;color:var(--muted);font-size:.85rem}
+</style>
+</head>
+<body>
+<main>
+<h1>Prova di decentramento spaziale</h1>
+<p class="sub">Prototipo esplorativo · riconoscimento della prospettiva visiva in un ambiente scolastico tridimensionale</p>
+<section class="panel" id="intro">
+<h2>Consegna</h2>
+<p>Osserverai la stessa aula da quattro posizioni differenti. Dopo ogni visualizzazione, indica da quale posizione è stata ripresa la scena. Le posizioni sono contrassegnate dai nomi dei quattro soggetti.</p>
+<p class="small">La prova contiene 16 presentazioni. Le prospettive sono distribuite in ordine casuale. Questa versione è un prototipo tecnico, non uno strumento validato.</p>
+<button class="primary" id="start">Inizia la simulazione</button>
+</section>
+<section class="panel hidden" id="task">
+<div class="row"><span class="pill" id="counter">Prova 1 di 16</span><span class="small">Individua il punto di vista</span></div>
+<div class="progress"><div id="bar"></div></div>
+<div id="view" aria-label="Visualizzazione tridimensionale dell'aula"></div>
+<p><strong>Da quale posizione è stata osservata l'aula?</strong></p>
+<div class="choices" id="choices">
+<button data-choice="Docente">Docente</button><button data-choice="Alunno A">Alunno A</button><button data-choice="Alunno B">Alunno B</button><button data-choice="Alunno C">Alunno C</button>
+</div>
+<div id="feedback" aria-live="polite"></div>
+</section>
+<section class="panel hidden" id="done">
+<h2>Simulazione completata</h2>
+<p id="summary"></p>
+<p class="small">I dati sono disponibili in questa schermata e possono essere scaricati in formato CSV. Questa versione non invia dati al foglio di ricerca.</p>
+<div class="row"><button class="primary" id="download">Scarica risultati CSV</button><button id="again">Ripeti la simulazione</button></div>
+</section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+const $=id=>document.getElementById(id);
+const people=[
+ {name:"Docente",pos:[0,1.65,5.7],target:[0,1.1,0]},
+ {name:"Alunno A",pos:[-4.2,1.35,1.7],target:[0,1.0,-1.0]},
+ {name:"Alunno B",pos:[4.2,1.35,1.7],target:[0,1.0,-1.0]},
+ {name:"Alunno C",pos:[0,1.35,-4.8],target:[0,1.0,0.8]}
+];
+let renderer,scene,camera,sequence=[],index=0,answers=[],startedAt=0,trialStart=0;
+function box(w,h,d,x,y,z,color){
+ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color,roughness:.88}));
+ m.position.set(x,y,z);scene.add(m);return m;
+}
+function sphere(r,x,y,z,color){
+ const m=new THREE.Mesh(new THREE.SphereGeometry(r,20,16),new THREE.MeshStandardMaterial({color}));
+ m.position.set(x,y,z);scene.add(m);return m;
+}
+function buildScene(){
+ scene=new THREE.Scene();scene.background=new THREE.Color(0xdce7f2);
+ scene.add(new THREE.HemisphereLight(0xffffff,0x8290a5,2));
+ const light=new THREE.DirectionalLight(0xffffff,1.2);light.position.set(4,9,6);scene.add(light);
+ // classroom shell, floor and walls
+ box(12,.18,12,0,-.12,0,0xb9c3ce);
+ box(12,4,.15,0,2,-6,0xe7e2d7);box(.15,4,12,-6,2,0,0xe7e2d7);box(.15,4,12,6,2,0xe7e2d7);
+ // board and teacher desk
+ box(4,1.5,.12,0,2.25,-5.88,0x29485b);box(2.4,.85,1.1,0,.48,-4.8,0x98734f);
+ // windows on right wall
+ for(let z of [-3.7,-1.2,1.3])box(.08,1.5,1.8,5.88,2.55,z,0x8dbbd1);
+ // desks in two rows
+ for(let z of [-2.2,.6,3.0])for(let x of [-2.6,2.6]){
+  box(1.65,.14,1.05,x,.85,z,0xc69a68);
+  box(.12,.8,.12,x-.68,.4,z-.38,0x596575);box(.12,.8,.12,x+.68,.4,z-.38,0x596575);
+  box(.12,.8,.12,x-.68,.4,z+.38,0x596575);box(.12,.8,.12,x+.68,.4,z+.38,0x596575);
+ }
+ // recognizable subject markers at the four observation stations
+ const marks=[[0,0,5.35],[ -4.2,0,1.7],[4.2,0,1.7],[0,0,-4.8]];
+ const colors=[0x315b9b,0x9a5949,0x4f896b,0x9a7a35];
+ marks.forEach((p,i)=>{box(.45,.08,.45,p[0],p[1]+.06,p[2],colors[i]);sphere(.18,p[0],.95,p[2],colors[i]);});
+ camera=new THREE.PerspectiveCamera(62,1,.1,100);
+ renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputEncoding=THREE.sRGBEncoding;
+ $('view').replaceChildren(renderer.domElement);resize();window.addEventListener('resize',resize);
+}
+function resize(){if(!renderer)return;const w=$('view').clientWidth,h=$('view').clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();render();}
+function render(){renderer.render(scene,camera);}
+function setView(i){const p=people[i];camera.position.set(...p.pos);camera.lookAt(...p.target);render();}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function begin(){ $('intro').classList.add('hidden');$('done').classList.add('hidden');$('task').classList.remove('hidden');if(!renderer)buildScene();sequence=shuffle([0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3]);index=0;answers=[];showTrial();}
+function showTrial(){const target=sequence[index];setView(target);$('counter').textContent='Prova '+(index+1)+' di 16';$('bar').style.width=(index/16*100)+'%';$('feedback').textContent='';trialStart=performance.now();$('choices').querySelectorAll('button').forEach(b=>b.disabled=false);}
+function respond(name){const rt=Math.round(performance.now()-trialStart);const target=people[sequence[index]].name;answers.push({trial:index+1,correct_subject:target,response:name,correct:name===target?1:0,response_time_ms:rt});$('choices').querySelectorAll('button').forEach(b=>b.disabled=true);$('feedback').textContent=name===target?'Risposta acquisita.':'Risposta acquisita.';setTimeout(()=>{index++;if(index<16)showTrial();else finish();},450);}
+function finish(){ $('task').classList.add('hidden');$('done').classList.remove('hidden');const score=answers.reduce((s,a)=>s+a.correct,0);$('summary').textContent='Risposte corrette: '+score+' su 16. Tempo medio di risposta: '+Math.round(answers.reduce((s,a)=>s+a.response_time_ms,0)/16)+' ms.';$('bar').style.width='100%';}
+function csv(){const head='trial,correct_subject,response,correct,response_time_ms';const rows=answers.map(a=>[a.trial,a.correct_subject,a.response,a.correct,a.response_time_ms].join(','));const blob=new Blob([[head,...rows].join('\n')],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='decentramento_spaziale.csv';a.click();URL.revokeObjectURL(url);}
+$('start').addEventListener('click',begin);$('again').addEventListener('click',begin);$('download').addEventListener('click',csv);
+$('choices').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>respond(b.dataset.choice)));
+})();
+</script>
+</body>
+</html>
