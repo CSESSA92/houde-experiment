@@ -45,14 +45,27 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .hidden{display:none!important}
 footer{border-top:1px solid var(--line);padding:24px 6%;display:flex;justify-content:space-between;gap:10px;color:#62778A;font-size:9px;letter-spacing:.12em}
 @media(max-width:600px){header{padding:0 4%}.header-right{font-size:9px}main{margin:30px auto}.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card{min-height:130px}.card-symbol{font-size:42px}.color-swatch{width:48px;height:48px}footer{flex-direction:column}}
+
+/* Accessibilità di base: tastiera, focus visibile, touch e movimento ridotto. */
+.skip-link{position:absolute;left:12px;top:-100px;z-index:9999;padding:12px 16px;background:#EDF4FA;color:#090D16;border-radius:5px;font-size:16px;font-weight:700}
+.skip-link:focus{top:12px}
+:focus-visible{outline:3px solid #EDF4FA!important;outline-offset:3px}
+main:focus{outline:none}
+input,select,textarea{font-size:16px}
+button{min-height:44px;touch-action:manipulation}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+@media(prefers-contrast:more){button,input,select,textarea,.panel,.notice,.card{border-color:#EDF4FA!important}}
+@media(forced-colors:active){button,.card,input,select,textarea{forced-color-adjust:auto;border:1px solid ButtonText}}
+
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main-content">Salta al contenuto principale</a>
 <header>
   <div class="brand"><div class="symbol"></div>COGNITIVE RESEARCH SYSTEM</div>
   <div class="header-right">CR—01 / TASK 01</div>
 </header>
-<main>
+<main id="main-content" tabindex="-1">
   <div class="overline">EXPERIMENTAL TASK / CONDITIONAL REASONING</div>
   <h1>Verifica della regola.</h1>
   <p class="lead" id="participantLine"></p>
