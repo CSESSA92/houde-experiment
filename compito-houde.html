@@ -24,6 +24,9 @@ h1{font-size:clamp(30px,5vw,44px);font-weight:500;letter-spacing:-.04em;margin:1
 .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:22px 0}
 .card{min-height:155px;border:2px solid #34485C;border-radius:10px;background:#0A111B;color:var(--white);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:15px;transition:.15s}
 .card:hover{border-color:#6C879D;transform:translateY(-2px)}
+.card:focus-visible,button:focus-visible{outline:3px solid var(--white);outline-offset:3px}
+button{min-height:48px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;scroll-behavior:auto!important}}
 .card.selected{border-color:var(--cyan);background:#12303A;box-shadow:0 0 0 2px #58D9E822}
 .card-symbol{font-size:48px;line-height:1;color:#EDF4FA}.color-swatch{width:54px;height:54px;border-radius:9px;border:1px solid #ffffff55;display:block}
 .card-label{font-size:12px;color:#C5D3DE;text-align:center}
@@ -63,11 +66,29 @@ footer{border-top:1px solid var(--line);padding:24px 6%;display:flex;justify-con
       <br><br>
       Puoi selezionare e deselezionare le carte prima di confermare. Non riceverai indicazioni sulla correttezza delle risposte.
     </div>
-    <div class="actions"><button class="primary" id="begin" type="button" onclick="window.startHoudeTask()">INIZIA LA PROVA →</button></div>
+    <div class="actions"><button class="primary" id="begin" type="button">INIZIA L'ESEMPIO →</button></div>
+  </section>
+
+  <section class="panel hidden" id="practice">
+    <div class="panel-title">ESEMPIO DI FAMILIARIZZAZIONE</div>
+    <div class="notice">
+      Considera la regola seguente: <strong>Se su una faccia c'è una vocale, sull'altra faccia c'è un numero pari.</strong>
+      <br><br>
+      Le carte mostrano A, K, 4 e 7. Seleziona tutte e sole quelle che ritieni necessario girare per verificare se la regola può essere violata, poi premi «Verifica risposta».
+      <br><br>
+      Questo è soltanto un esempio: potrai ripeterlo finché non avrai individuato la soluzione. Non verrà conteggiato tra le prove.
+    </div>
+    <div class="cards" id="practiceCards" role="group" aria-label="Carte dell'esempio"></div>
+    <div class="feedback" id="practiceFeedback" aria-live="polite"></div>
+    <div class="actions">
+      <button class="secondary" id="practiceClear" type="button">ANNULLA SELEZIONI</button>
+      <button class="primary" id="practiceConfirm" type="button" disabled>VERIFICA RISPOSTA →</button>
+    </div>
+    <div class="actions"><button class="primary" id="practiceContinue" type="button" disabled>PROSEGUI ALLE PROVE →</button></div>
   </section>
 
   <section class="panel hidden" id="task">
-    <div class="meta"><span id="trialLabel">PROVA 1 / 4</span><span id="participantShort"></span></div>
+    <div class="meta"><span id="trialLabel">PROVA 1 / 8</span><span id="participantShort"></span></div>
     <div class="progress" id="progress"></div>
     <div class="rule" id="rule"></div>
     <div class="notice">Seleziona le carte da girare. Puoi selezionare più carte.</div>
@@ -93,20 +114,6 @@ footer{border-top:1px solid var(--line);padding:24px 6%;display:flex;justify-con
 </main>
 <footer><span>CR—01 / COGNITIVE RESEARCH</span><span>RAGIONAMENTO CONDIZIONALE · VERSIONE DI SVILUPPO</span></footer>
 <script>
-/* Avvio di emergenza: resta disponibile anche se il codice successivo incontra un errore. */
-window.startHoudeTask = function () {
-  const instructions = document.getElementById("instructions");
-  const task = document.getElementById("task");
-  if (instructions) instructions.classList.add("hidden");
-  if (task) task.classList.remove("hidden");
-  try {
-    if (typeof showTrial !== "function") throw new Error("La funzione della prova non è stata caricata.");
-    showTrial();
-  } catch (error) {
-    const rule = document.getElementById("rule");
-    if (rule) rule.textContent = "AVVIO NON RIUSCITO: " + (error && error.message ? error.message : String(error));
-  }
-};
 const participant = sessionStorage.getItem("participant") || "";
 const profile = JSON.parse(sessionStorage.getItem("participantProfile") || "null");
 if (!participant || !profile) {
@@ -160,6 +167,50 @@ const trials = [
     ],
     correct:["notP","notQ"]
   }
+  {
+    id:"H05",
+    rule:"Se su una faccia di una carta è presente un cerchio, sull'altra faccia è presente il colore rosso.",
+    cards:[
+      {role:"P",kind:"shape",label:"Cerchio",symbol:"●",color:"#EDF4FA"},
+      {role:"notP",kind:"shape",label:"Triangolo",symbol:"▲",color:"#EDF4FA"},
+      {role:"Q",kind:"color",label:"Rosso",color:"#F04444"},
+      {role:"notQ",kind:"color",label:"Blu",color:"#54A6F6"}
+    ],
+    correct:["P","notQ"]
+  },
+  {
+    id:"H06",
+    rule:"Se su una faccia di una carta è presente un quadrato, sull'altra faccia è presente il colore blu.",
+    cards:[
+      {role:"P",kind:"shape",label:"Quadrato",symbol:"■",color:"#EDF4FA"},
+      {role:"notP",kind:"shape",label:"Rombo",symbol:"◆",color:"#EDF4FA"},
+      {role:"Q",kind:"color",label:"Blu",color:"#54A6F6"},
+      {role:"notQ",kind:"color",label:"Giallo",color:"#F2C94C"}
+    ],
+    correct:["P","notQ"]
+  },
+  {
+    id:"H07",
+    rule:"Se su una faccia di una carta è presente una stella, sull'altra faccia è presente il colore verde.",
+    cards:[
+      {role:"P",kind:"shape",label:"Stella",symbol:"★",color:"#EDF4FA"},
+      {role:"notP",kind:"shape",label:"Esagono",symbol:"⬢",color:"#EDF4FA"},
+      {role:"Q",kind:"color",label:"Verde",color:"#43C78B"},
+      {role:"notQ",kind:"color",label:"Arancione",color:"#F39A45"}
+    ],
+    correct:["P","notQ"]
+  },
+  {
+    id:"H08",
+    rule:"Se su una faccia di una carta è presente un pentagono, sull'altra faccia è presente il colore viola.",
+    cards:[
+      {role:"P",kind:"shape",label:"Pentagono",symbol:"⬟",color:"#EDF4FA"},
+      {role:"notP",kind:"shape",label:"Cerchio",symbol:"●",color:"#EDF4FA"},
+      {role:"Q",kind:"color",label:"Viola",color:"#B28AF5"},
+      {role:"notQ",kind:"color",label:"Giallo",color:"#F2C94C"}
+    ],
+    correct:["P","notQ"]
+  }
 ];
 
 function shuffle(items){
@@ -183,14 +234,86 @@ const device = /iPad|Tablet|Android/i.test(navigator.userAgent) ? "tablet_or_mob
 window.startHoudeTask = function(){
   try {
     document.getElementById("instructions").classList.add("hidden");
-    document.getElementById("task").classList.remove("hidden");
-    showTrial();
+    document.getElementById("practice").classList.remove("hidden");
+    showPractice();
   } catch (error) {
-    document.getElementById("task").classList.remove("hidden");
-    document.getElementById("rule").textContent = "Errore nell'avvio della prova: " + error.message;
+    document.getElementById("practice").classList.remove("hidden");
+    document.getElementById("practiceFeedback").textContent = "Errore nell'avvio dell'esempio: " + error.message;
   }
 };
 document.getElementById("begin").addEventListener("click", window.startHoudeTask);
+const practiceData = [
+  {role:"P",label:"A",symbol:"A"},
+  {role:"notP",label:"K",symbol:"K"},
+  {role:"Q",label:"4",symbol:"4"},
+  {role:"notQ",label:"7",symbol:"7"}
+];
+let practiceSelected = new Set();
+
+function showPractice(){
+  practiceSelected.clear();
+  const container=document.getElementById("practiceCards");
+  container.innerHTML="";
+  document.getElementById("practiceFeedback").textContent="";
+  document.getElementById("practiceContinue").disabled=true;
+  document.getElementById("practiceConfirm").disabled=true;
+  practiceData.forEach((card,index)=>{
+    const button=document.createElement("button");
+    button.type="button";
+    button.className="card";
+    button.dataset.role=card.role;
+    button.setAttribute("aria-pressed","false");
+    button.setAttribute("aria-label","Carta "+card.label);
+    button.innerHTML='<span class="card-symbol">'+card.symbol+'</span><span class="card-label">Carta '+card.label+'</span>';
+    button.addEventListener("click",()=>{
+      if(document.getElementById("practiceContinue").disabled===false)return;
+      if(practiceSelected.has(card.role)){
+        practiceSelected.delete(card.role);
+        button.classList.remove("selected");
+        button.setAttribute("aria-pressed","false");
+      }else{
+        practiceSelected.add(card.role);
+        button.classList.add("selected");
+        button.setAttribute("aria-pressed","true");
+      }
+      document.getElementById("practiceConfirm").disabled=practiceSelected.size===0;
+      document.getElementById("practiceFeedback").textContent=practiceSelected.size+" carte selezionate";
+    });
+    container.appendChild(button);
+  });
+}
+document.getElementById("practiceClear").addEventListener("click",()=>{
+  practiceSelected.clear();
+  document.querySelectorAll("#practiceCards .card").forEach(button=>{
+    button.classList.remove("selected");
+    button.setAttribute("aria-pressed","false");
+  });
+  document.getElementById("practiceConfirm").disabled=true;
+  document.getElementById("practiceFeedback").textContent="Selezioni annullate.";
+});
+document.getElementById("practiceConfirm").addEventListener("click",()=>{
+  const correct=practiceSelected.size===2&&practiceSelected.has("P")&&practiceSelected.has("notQ");
+  if(correct){
+    document.getElementById("practiceFeedback").textContent="Corretto. Devi girare A e 7: la regola sarebbe violata se dietro A ci fosse un numero dispari. K e 4 non possono smentire la regola.";
+    document.getElementById("practiceConfirm").disabled=true;
+    document.getElementById("practiceContinue").disabled=false;
+    document.querySelectorAll("#practiceCards .card").forEach(button=>button.disabled=true);
+  }else{
+    document.getElementById("practiceFeedback").textContent="Non è ancora corretto. Per controllare la regola devi cercare una vocale associata a un numero dispari. Seleziona A e 7 e verifica di nuovo.";
+    practiceSelected.clear();
+    document.querySelectorAll("#practiceCards .card").forEach(button=>{
+      button.classList.remove("selected");
+      button.setAttribute("aria-pressed","false");
+    });
+    document.getElementById("practiceConfirm").disabled=true;
+  }
+});
+document.getElementById("practiceContinue").addEventListener("click",()=>{
+  document.getElementById("practice").classList.add("hidden");
+  document.getElementById("task").classList.remove("hidden");
+  showTrial();
+});
+
 function showTrial(){
   currentTrial=orderedTrials[trialIndex];
   selected=new Set();
@@ -215,6 +338,7 @@ function showTrial(){
     button.className="card";
     button.dataset.role=card.role;
     button.setAttribute("aria-pressed","false");
+    button.setAttribute("aria-label","Carta "+card.label);
     button.innerHTML = card.kind==="color"
       ? '<span class="color-swatch" style="background:'+card.color+'"></span><span class="card-label">'+card.label+'</span>'
       : '<span class="card-symbol">'+card.symbol+'</span><span class="card-label">'+card.label+'</span>';
