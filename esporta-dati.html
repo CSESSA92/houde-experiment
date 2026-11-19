@@ -16,7 +16,7 @@ button{min-height:44px;touch-action:manipulation}
 
 </style></head><body>
 <a class="skip-link" href="#main-content">Salta al contenuto principale</a><header>◇ &nbsp; COGNITIVE RESEARCH SYSTEM / CR—01</header><main id="main-content" tabindex="-1"><div class="overline">DATA MANAGEMENT / EXPORT</div><h1>Esportazione dei risultati.</h1><p class="lead">Verifica i dati presenti in questo browser e crea un unico file Excel (.xlsx) con fogli separati per profilo, ragionamento condizionale, Stroop e autorilevazione durante il filmato.</p>
-<section class="panel"><div class="status"><span>Codice partecipante</span><strong id="pid">—</strong></div><div class="status"><span>Profilo</span><strong id="profileStatus">—</strong></div><div class="status"><span>Ragionamento condizionale</span><strong id="houdeStatus">—</strong></div><div class="status"><span>Stroop digitale</span><strong id="stroopStatus">—</strong></div><div class="status"><span>Almost</span><strong id="almostStatus">—</strong></div><button id="export" disabled>GENERA FILE EXCEL (.XLSX) ↓</button><button id="send" disabled>INVIA I DATI ALL'ARCHIVIO UNISA →</button><div class="notice" id="message">I dati sono letti dalla memoria locale del browser. Puoi conservarne una copia Excel e inviare una copia all'archivio istituzionale. L'esito dell'invio dovrà essere verificato nel foglio Google Sheets.</div></section></main><footer>CR—01 / ESPORTAZIONE LOCALE · DATI NON TRASMESSI AUTOMATICAMENTE</footer>
+<section class="panel"><div class="status"><span>Codice partecipante</span><strong id="pid">—</strong></div><div class="status"><span>Profilo</span><strong id="profileStatus">—</strong></div><div class="status"><span>Ragionamento condizionale</span><strong id="houdeStatus">—</strong></div><div class="status"><span>Stroop digitale</span><strong id="stroopStatus">—</strong></div><div class="status"><span>Almost</span><strong id="almostStatus">—</strong></div><button id="export" disabled>GENERA FILE EXCEL (.XLSX) ↓</button><button id="send" disabled>INVIA I DATI ALL'ARCHIVIO UNISA →</button><div class="notice" id="message">I dati sono letti dalla memoria locale del browser. Puoi conservarne una copia Excel e inviare una copia all'archivio istituzionale. L'esito dell'invio dovrà essere verificato nel foglio Google Sheets.</div><button id="feedback" style="display:none" type="button">CONTINUA ALLA RESTITUZIONE FORMATIVA →</button></section></main><footer>CR—01 / ESPORTAZIONE LOCALE · DATI NON TRASMESSI AUTOMATICAMENTE</footer>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 const participant=sessionStorage.getItem("participant")||"";
@@ -73,6 +73,8 @@ document.getElementById("send").addEventListener("click", async ()=>{
   });
   message.textContent="Richiesta di invio trasmessa dal browser. Per sicurezza, verifica che il codice partecipante e le righe dei compiti compaiano nei fogli Google Sheets. Il browser non consente a questa pagina di leggere la conferma del server.";
   button.textContent="RICHIESTA INVIATA";
+  document.getElementById("feedback").style.display="block";
+  document.getElementById("feedback").addEventListener("click",()=>{window.location.href="restituzione.html";},{once:true});
  }catch(error){
   message.textContent="Invio non riuscito: "+error.message+". I dati sono ancora disponibili in questo browser: genera il file Excel come copia di sicurezza.";
   button.disabled=false;
