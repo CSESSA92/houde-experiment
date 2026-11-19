@@ -37,8 +37,8 @@ button.primary{background:#315b9b;border-color:#477bc4}button:disabled{opacity:.
  <div class="legend-item"><span class="letter" style="background:#a77b20">D</span><span class="legend-name">Alunno C</span></div>
 </div>
 <p class="small"><strong>Attenzione:</strong> la legenda sarà visibile per almeno 20 secondi e poi scomparirà. Seguiranno 4 prove di familiarizzazione con feedback, non conteggiate nei risultati, e 16 prove sperimentali senza feedback. Questa versione è un prototipo tecnico, non uno strumento validato.</p>
-<p class="small" id="memorizeTimer">Studia la legenda: il pulsante si attiverà tra 20 secondi.</p>
-<button class="primary" id="start" disabled>Inizia la familiarizzazione</button>
+<p class="small" id="memorizeTimer">Studia la legenda. Quando hai memorizzato le associazioni, premi il pulsante per iniziare.</p>
+<button class="primary" id="start">Ho memorizzato: inizia la familiarizzazione</button>
 </section>
 <section class="panel hidden" id="task">
 <div class="row"><span class="pill" id="counter">Familiarizzazione 1 di 4</span><span class="small" id="phaseLabel">Individua il punto di vista</span></div>
@@ -113,8 +113,7 @@ function respond(letter){const rt=Math.round(performance.now()-trialStart);const
 }
 function finish(){ $('task').classList.add('hidden');$('done').classList.remove('hidden');const score=answers.reduce((s,a)=>s+a.correct,0);$('summary').textContent='Risposte corrette: '+score+' su 16. Tempo medio di risposta: '+Math.round(answers.reduce((s,a)=>s+a.response_time_ms,0)/16)+' ms.';$('bar').style.width='100%';}
 function csv(){const head='trial,correct_subject,correct_letter,response_letter,correct,response_time_ms';const rows=answers.map(a=>[a.trial,a.correct_subject,a.correct_letter,a.response_letter,a.correct,a.response_time_ms].join(','));const blob=new Blob([[head,...rows].join('\n')],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='decentramento_spaziale.csv';a.click();URL.revokeObjectURL(url);}
-$('start').addEventListener('click',begin);$('again').addEventListener('click',()=>{ $('done').classList.add('hidden');$('intro').classList.remove('hidden');$('task').classList.add('hidden');$('legend').classList.remove('hidden');$('start').disabled=true;$('memorizeTimer').textContent='Studia la legenda: scomparirà tra 20 secondi.';setTimeout(()=>{$('legend').classList.add('hidden');$('start').disabled=false;$('memorizeTimer').textContent='La legenda è scomparsa. Puoi iniziare la familiarizzazione.';},20000);});$('download').addEventListener('click',csv);
-setTimeout(()=>{$('legend').classList.add('hidden');$('start').disabled=false;$('memorizeTimer').textContent='La legenda è scomparsa. Puoi iniziare la familiarizzazione.';},20000);
+$('start').addEventListener('click',begin);$('again').addEventListener('click',()=>{ $('done').classList.add('hidden');$('intro').classList.remove('hidden');$('task').classList.add('hidden');$('legend').classList.remove('hidden');$('start').disabled=false;$('memorizeTimer').textContent='Studia la legenda. Quando hai memorizzato le associazioni, premi il pulsante per iniziare.';});$('download').addEventListener('click',csv);
 $('choices').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>respond(b.dataset.choice)));
 })();
 </script>
