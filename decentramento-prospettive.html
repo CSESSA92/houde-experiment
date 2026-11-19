@@ -20,6 +20,7 @@ button.primary{background:#315b9b;border-color:#477bc4}button:disabled{opacity:.
 .muted{color:var(--muted)}#feedback{min-height:28px;margin-top:12px;font-weight:600}.hidden{display:none!important}
 .progress{height:7px;background:#293650;border-radius:9px;overflow:hidden;margin:12px 0}.progress>div{height:100%;width:0;background:#78a9ff;transition:width .2s}
 .small{font-size:.9rem;color:var(--muted)}.pill{display:inline-block;border:1px solid var(--line);padding:4px 9px;border-radius:99px;color:var(--muted);font-size:.85rem}
+.legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0}.legend-item{display:flex;align-items:center;gap:12px;background:#10182a;border:1px solid var(--line);border-radius:10px;padding:11px}.letter{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:9px;color:white;font-weight:800;font-size:1.1rem;flex:none}.legend-name{font-weight:650}.choices button{color:white;border-width:2px;font-size:1.15rem;min-height:58px}.choices button:hover{filter:brightness(1.15)}@media(max-width:450px){.legend{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -28,17 +29,23 @@ button.primary{background:#315b9b;border-color:#477bc4}button:disabled{opacity:.
 <p class="sub">Prototipo esplorativo · riconoscimento della prospettiva visiva in un ambiente scolastico tridimensionale</p>
 <section class="panel" id="intro">
 <h2>Consegna</h2>
-<p>Osserverai la stessa aula da quattro posizioni differenti. Dopo ogni visualizzazione, indica da quale posizione è stata ripresa la scena. Le posizioni sono contrassegnate dai nomi dei quattro soggetti.</p>
-<p class="small">La prova contiene 16 presentazioni. Le prospettive sono distribuite in ordine casuale. Questa versione è un prototipo tecnico, non uno strumento validato.</p>
+<p>Prima di iniziare, memorizza la corrispondenza tra ciascun soggetto, la sua lettera e il suo colore. Durante la simulazione vedrai l’aula da quattro punti di vista differenti: dopo ogni visualizzazione, indica la lettera associata al soggetto dal cui punto di vista è stata osservata la scena.</p>
+<div class="legend" aria-label="Legenda dei soggetti">
+ <div class="legend-item"><span class="letter" style="background:#315b9b">A</span><span class="legend-name">Docente</span></div>
+ <div class="legend-item"><span class="letter" style="background:#b94f45">B</span><span class="legend-name">Alunno A</span></div>
+ <div class="legend-item"><span class="letter" style="background:#34845e">C</span><span class="legend-name">Alunno B</span></div>
+ <div class="legend-item"><span class="letter" style="background:#a77b20">D</span><span class="legend-name">Alunno C</span></div>
+</div>
+<p class="small"><strong>Attenzione:</strong> l’associazione lettera-colore-soggetto rimane identica per tutta la prova. La legenda non sarà riproposta durante le 16 presentazioni. Le prospettive sono distribuite in ordine casuale. Questa versione è un prototipo tecnico, non uno strumento validato.</p>
 <button class="primary" id="start">Inizia la simulazione</button>
 </section>
 <section class="panel hidden" id="task">
 <div class="row"><span class="pill" id="counter">Prova 1 di 16</span><span class="small">Individua il punto di vista</span></div>
 <div class="progress"><div id="bar"></div></div>
 <div id="view" aria-label="Visualizzazione tridimensionale dell'aula"></div>
-<p><strong>Da quale posizione è stata osservata l'aula?</strong></p>
+<p><strong>A quale lettera corrisponde il punto di vista osservato?</strong></p>
 <div class="choices" id="choices">
-<button data-choice="Docente">Docente</button><button data-choice="Alunno A">Alunno A</button><button data-choice="Alunno B">Alunno B</button><button data-choice="Alunno C">Alunno C</button>
+<button data-choice="A" style="background:#315b9b;border-color:#315b9b">A</button><button data-choice="B" style="background:#b94f45;border-color:#b94f45">B</button><button data-choice="C" style="background:#34845e;border-color:#34845e">C</button><button data-choice="D" style="background:#a77b20;border-color:#a77b20">D</button>
 </div>
 <div id="feedback" aria-live="polite"></div>
 </section>
@@ -54,10 +61,10 @@ button.primary{background:#315b9b;border-color:#477bc4}button:disabled{opacity:.
 (() => {
 const $=id=>document.getElementById(id);
 const people=[
- {name:"Docente",pos:[0,1.65,5.7],target:[0,1.1,0]},
- {name:"Alunno A",pos:[-4.2,1.35,1.7],target:[0,1.0,-1.0]},
- {name:"Alunno B",pos:[4.2,1.35,1.7],target:[0,1.0,-1.0]},
- {name:"Alunno C",pos:[0,1.35,-4.8],target:[0,1.0,0.8]}
+ {name:"Docente",letter:"A",color:0x315b9b,pos:[0,1.65,5.7],target:[0,1.1,0]},
+ {name:"Alunno A",letter:"B",color:0xb94f45,pos:[-4.2,1.35,1.7],target:[0,1.0,-1.0]},
+ {name:"Alunno B",letter:"C",color:0x34845e,pos:[4.2,1.35,1.7],target:[0,1.0,-1.0]},
+ {name:"Alunno C",letter:"D",color:0xa77b20,pos:[0,1.35,-4.8],target:[0,1.0,0.8]}
 ];
 let renderer,scene,camera,sequence=[],index=0,answers=[],startedAt=0,trialStart=0;
 function box(w,h,d,x,y,z,color){
@@ -87,8 +94,7 @@ function buildScene(){
  }
  // recognizable subject markers at the four observation stations
  const marks=[[0,0,5.35],[ -4.2,0,1.7],[4.2,0,1.7],[0,0,-4.8]];
- const colors=[0x315b9b,0x9a5949,0x4f896b,0x9a7a35];
- marks.forEach((p,i)=>{box(.45,.08,.45,p[0],p[1]+.06,p[2],colors[i]);sphere(.18,p[0],.95,p[2],colors[i]);});
+ marks.forEach((p,i)=>{const color=people[i].color;box(.45,.08,.45,p[0],p[1]+.06,p[2],color);sphere(.18,p[0],.95,p[2],color);});
  camera=new THREE.PerspectiveCamera(62,1,.1,100);
  renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputEncoding=THREE.sRGBEncoding;
  $('view').replaceChildren(renderer.domElement);resize();window.addEventListener('resize',resize);
@@ -99,9 +105,9 @@ function setView(i){const p=people[i];camera.position.set(...p.pos);camera.lookA
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function begin(){ $('intro').classList.add('hidden');$('done').classList.add('hidden');$('task').classList.remove('hidden');if(!renderer)buildScene();sequence=shuffle([0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3]);index=0;answers=[];showTrial();}
 function showTrial(){const target=sequence[index];setView(target);$('counter').textContent='Prova '+(index+1)+' di 16';$('bar').style.width=(index/16*100)+'%';$('feedback').textContent='';trialStart=performance.now();$('choices').querySelectorAll('button').forEach(b=>b.disabled=false);}
-function respond(name){const rt=Math.round(performance.now()-trialStart);const target=people[sequence[index]].name;answers.push({trial:index+1,correct_subject:target,response:name,correct:name===target?1:0,response_time_ms:rt});$('choices').querySelectorAll('button').forEach(b=>b.disabled=true);$('feedback').textContent=name===target?'Risposta acquisita.':'Risposta acquisita.';setTimeout(()=>{index++;if(index<16)showTrial();else finish();},450);}
+function respond(letter){const rt=Math.round(performance.now()-trialStart);const target=people[sequence[index]];answers.push({trial:index+1,correct_subject:target.name,correct_letter:target.letter,response_letter:letter,correct:letter===target.letter?1:0,response_time_ms:rt});$('choices').querySelectorAll('button').forEach(b=>b.disabled=true);$('feedback').textContent=name===target?'Risposta acquisita.':'Risposta acquisita.';setTimeout(()=>{index++;if(index<16)showTrial();else finish();},450);}
 function finish(){ $('task').classList.add('hidden');$('done').classList.remove('hidden');const score=answers.reduce((s,a)=>s+a.correct,0);$('summary').textContent='Risposte corrette: '+score+' su 16. Tempo medio di risposta: '+Math.round(answers.reduce((s,a)=>s+a.response_time_ms,0)/16)+' ms.';$('bar').style.width='100%';}
-function csv(){const head='trial,correct_subject,response,correct,response_time_ms';const rows=answers.map(a=>[a.trial,a.correct_subject,a.response,a.correct,a.response_time_ms].join(','));const blob=new Blob([[head,...rows].join('\n')],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='decentramento_spaziale.csv';a.click();URL.revokeObjectURL(url);}
+function csv(){const head='trial,correct_subject,correct_letter,response_letter,correct,response_time_ms';const rows=answers.map(a=>[a.trial,a.correct_subject,a.correct_letter,a.response_letter,a.correct,a.response_time_ms].join(','));const blob=new Blob([[head,...rows].join('\n')],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='decentramento_spaziale.csv';a.click();URL.revokeObjectURL(url);}
 $('start').addEventListener('click',begin);$('again').addEventListener('click',begin);$('download').addEventListener('click',csv);
 $('choices').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>respond(b.dataset.choice)));
 })();
