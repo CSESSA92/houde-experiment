@@ -119,8 +119,8 @@ function finish(){
  document.getElementById("summary").textContent="Durata del filmato: "+formatTime(duration)+". La prova è stata completata.";
 }
 document.getElementById("download").addEventListener("click",()=>{
- const header=["participant_id","task","video_id","task_order","event_number","elapsed_ms","video_time_s","wall_time","press_count_total","pause_attempts","seek_anomalies"];
- const data=presses.length?presses.map(p=>[participant,"almost_mentalization_self_detection",VIDEO_ID,order,p.event_number,p.elapsed_ms,p.video_time_s,p.wall_time,presses.length,pauseAttempts,seekAnomalies]):[[participant,"almost_mentalization_self_detection",VIDEO_ID,order,"","","","",0,pauseAttempts,seekAnomalies]];
+ const header=["participant_id","task","video_id","task_order","event_number","elapsed_ms","video_time_s","wall_time","pause_attempts","seek_anomalies"];
+ const data=presses.length?presses.map(p=>[participant,"almost_mentalization_self_detection",VIDEO_ID,order,p.event_number,p.elapsed_ms,p.video_time_s,p.wall_time,pauseAttempts,seekAnomalies]):[[participant,"almost_mentalization_self_detection",VIDEO_ID,order,"","","","",pauseAttempts,seekAnomalies]];
  const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
  const csv=[header.map(q).join(","),...data.map(r=>r.map(q).join(","))].join("\r\n");
  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");
