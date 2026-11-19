@@ -20,7 +20,7 @@ function status(id,ok,label){const e=document.getElementById(id);e.textContent=o
 status("profileStatus",!!profile, "Disponibile");
 status("houdeStatus",!!houde&&Array.isArray(houde.results),houde&&houde.results?houde.results.length+" prove":"Disponibile");
 status("stroopStatus",!!stroop&&Array.isArray(stroop.results),stroop&&stroop.results?stroop.results.length+" prove":"Disponibile");
-status("almostStatus",!!almost,almost?almost.press_count+" pressioni":"Disponibile");
+status("almostStatus",!!almost,almost?"Completato":"Disponibile");
 const canExport=!!participant&&!!profile&&(!!houde||!!stroop||!!almost);
 document.getElementById("export").disabled=!canExport;
 document.getElementById("send").disabled=!canExport;
