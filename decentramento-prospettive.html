@@ -31,10 +31,10 @@ button.primary{background:#315b9b;border-color:#477bc4}button:disabled{opacity:.
 <h2>Consegna</h2>
 <p>Prima di iniziare, assegna liberamente una lettera a ciascuno dei quattro soggetti. Ogni lettera deve essere utilizzata una sola volta. L'associazione scelta resterà invariata per tutta la prova. Durante le prove vedrai l'aula da quattro punti di vista differenti: indica la lettera che hai assegnato al soggetto dal cui punto di vista è stata osservata la scena.</p>
 <div class="legend" id="legend" aria-label="Associazione libera delle lettere">
- <label class="legend-item"><span class="legend-name">Docente · lato posteriore dell'aula</span><select id="assign-0" aria-label="Lettera assegnata al docente"><option value="">Scegli</option><option>A</option><option>B</option><option>C</option><option>D</option></select></label>
- <label class="legend-item"><span class="legend-name">Alunno 1 · lato sinistro</span><select id="assign-1" aria-label="Lettera assegnata all'alunno 1"><option value="">Scegli</option><option>A</option><option>B</option><option>C</option><option>D</option></select></label>
- <label class="legend-item"><span class="legend-name">Alunno 2 · lato destro</span><select id="assign-2" aria-label="Lettera assegnata all'alunno 2"><option value="">Scegli</option><option>A</option><option>B</option><option>C</option><option>D</option></select></label>
- <label class="legend-item"><span class="legend-name">Alunno 3 · vicino alla lavagna</span><select id="assign-3" aria-label="Lettera assegnata all'alunno 3"><option value="">Scegli</option><option>A</option><option>B</option><option>C</option><option>D</option></select></label>
+ <label class="legend-item"><span class="legend-name">Docente</span><select id="assign-0" aria-label="Lettera assegnata al docente"><option value="">Scegli</option><option>A</option><option>B</option><option>C</option><option>D</option></select></label>
+ <label class="legend-item"><span class="legend-name">Alunno 1</span><select id="assign-1" aria-label="Lettera assegnata all'alunno 1"><option value="">Scegli</option><option>A</option><option>B</option><option>C</option><option>D</option></select></label>
+ <label class="legend-item"><span class="legend-name">Alunno 2</span><select id="assign-2" aria-label="Lettera assegnata all'alunno 2"><option value="">Scegli</option><option>A</option><option>B</option><option>C</option><option>D</option></select></label>
+ <label class="legend-item"><span class="legend-name">Alunno 3</span><select id="assign-3" aria-label="Lettera assegnata all'alunno 3"><option value="">Scegli</option><option>A</option><option>B</option><option>C</option><option>D</option></select></label>
 </div>
 <p class="small"><strong>Procedura:</strong> dopo aver assegnato una lettera diversa a ciascun soggetto, conferma le associazioni. Seguiranno 4 prove di familiarizzazione con feedback, non conteggiate nei risultati, e 16 prove sperimentali senza feedback. Questa versione è un prototipo tecnico, non uno strumento validato.</p>
 <p class="small" id="memorizeTimer">Completa tutte e quattro le associazioni per abilitare il pulsante.</p>
@@ -63,10 +63,10 @@ button.primary{background:#315b9b;border-color:#477bc4}button:disabled{opacity:.
 (() => {
 const $=id=>document.getElementById(id);
 const people=[
- {name:"Docente",letter:"",pos:[0,1.65,5.7],target:[0,1.1,0]},
- {name:"Alunno 1",letter:"",pos:[-4.2,1.35,1.7],target:[0,1.0,-1.0]},
- {name:"Alunno 2",letter:"",pos:[4.2,1.35,1.7],target:[0,1.0,-1.0]},
- {name:"Alunno 3",letter:"",pos:[0,1.35,-4.8],target:[0,1.0,0.8]}
+ {name:"Docente",letter:"",pos:[0,1.65,-3.55],target:[0,1.0,3.0]},
+ {name:"Alunno 1",letter:"",pos:[-2.6,1.45,1.75],target:[0,1.0,-5.5]},
+ {name:"Alunno 2",letter:"",pos:[2.6,1.45,1.75],target:[0,1.0,-5.5]},
+ {name:"Alunno 3",letter:"",pos:[-2.6,1.45,4.15],target:[0,1.0,-5.5]}
 ];
 let renderer,scene,camera,sequence=[],practiceSequence=[],index=0,answers=[],practiceIndex=0,phase="practice",trialStart=0;
 function box(w,h,d,x,y,z,color){
@@ -94,9 +94,15 @@ function buildScene(){
   box(.12,.8,.12,x-.68,.4,z-.38,0x596575);box(.12,.8,.12,x+.68,.4,z-.38,0x596575);
   box(.12,.8,.12,x-.68,.4,z+.38,0x596575);box(.12,.8,.12,x+.68,.4,z+.38,0x596575);
  }
- // Neutral markers: no color cue identifies the viewpoint during the task.
- const marks=[[0,0,5.35],[ -4.2,0,1.7],[4.2,0,1.7],[0,0,-4.8]];
- marks.forEach((p)=>{box(.45,.08,.45,p[0],p[1]+.06,p[2],0x77808b);sphere(.18,p[0],.95,p[2],0x77808b);});
+ // A fifth pupil is a visual distractor only; it has no experimental viewpoint.
+ // It is seated at the fourth desk, visually similar to an ordinary classroom occupant.
+ const distractorX=2.6,distractorZ=3.95;
+ box(.48,.62,.34,distractorX,1.12,distractorZ,0x7b8794);
+ sphere(.23,distractorX,1.62,distractorZ-.04,0xb9a18d);
+ // Neutral chair behind the distractor; no letter or identifying marker.
+ box(.62,.12,.55,distractorX,.62,distractorZ+.32,0x687586);
+ box(.10,.65,.10,distractorX-.25,.30,distractorZ+.52,0x687586);
+ box(.10,.65,.10,distractorX+.25,.30,distractorZ+.52,0x687586);
  camera=new THREE.PerspectiveCamera(62,1,.1,100);
  renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputEncoding=THREE.sRGBEncoding;
  $('view').replaceChildren(renderer.domElement);resize();window.addEventListener('resize',resize);
