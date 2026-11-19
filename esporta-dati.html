@@ -90,7 +90,7 @@ document.getElementById("export").addEventListener("click",()=>{
  const addRows=(name,rows)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows&&rows.length?rows:[{informazione:"Nessun dato registrato"}]),name);
  addRows("Ragionamento",houde&&houde.results);
  addRows("Stroop",stroop&&stroop.results);
- const almostMeta=almost?{participant_id:almost.participant_id,task:almost.task,video_id:almost.video_id,task_order:almost.task_order,video_started_at:almost.video_started_at,video_duration_s:almost.video_duration_s,press_count:almost.press_count,pause_attempts:almost.pause_attempts,seek_anomalies:almost.seek_anomalies,completed_at:almost.completed_at}:null;
+ const almostMeta=almost?{participant_id:almost.participant_id,task:almost.task,video_id:almost.video_id,task_order:almost.task_order,video_started_at:almost.video_started_at,video_duration_s:almost.video_duration_s,pause_attempts:almost.pause_attempts,seek_anomalies:almost.seek_anomalies,completed_at:almost.completed_at}:null;
  addRows("Almost_eventi",almost&&almost.presses);
  addRows("Almost_riepilogo",almostMeta?[almostMeta]:null);
  const safe=participant.replace(/[^a-zA-Z0-9_-]/g,"_");
