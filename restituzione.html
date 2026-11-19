@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090D16">
+<title>CR-01 | Restituzione formativa</title>
+<style>
+:root{--bg:#090D16;--panel:#111A27;--line:#26384A;--cyan:#58D9E8;--white:#EDF4FA;--muted:#91A3B4;--green:#7CE0B0}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#14283a 0%,transparent 52%),var(--bg);color:var(--white);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.65}
+header{height:68px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 6%;font-size:10px;letter-spacing:.18em;color:#A6B8C8}
+main{width:min(820px,92%);margin:46px auto 70px}
+.overline{font-size:10px;color:var(--cyan);letter-spacing:.2em}
+h1{font-size:clamp(30px,5vw,46px);font-weight:500;letter-spacing:-.04em;line-height:1.12;margin:14px 0}
+h2{font-size:22px;font-weight:500;margin:0 0 12px}
+h3{font-size:16px;font-weight:600;margin:0 0 8px;color:#CDEAF0}
+.lead{font-size:15px;color:var(--muted);max-width:690px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:25px;margin-top:22px}
+.note{background:#0A111B;border-left:3px solid var(--cyan);padding:15px 17px;color:#B9C8D4;border-radius:3px;font-size:14px;margin-top:18px}
+.step{color:var(--cyan);font-size:10px;letter-spacing:.17em;margin-bottom:8px}
+.situation{background:#0A111B;border:1px solid #34485C;border-radius:7px;padding:17px;margin:14px 0;color:#E2ECF3}
+.choices{display:grid;gap:10px;margin-top:15px}
+.choice{width:100%;text-align:left;background:#0A111B;color:var(--white);border:1px solid #34485C;border-radius:6px;padding:14px 16px;font-size:14px;cursor:pointer;min-height:48px}
+.choice:hover,.choice:focus-visible{border-color:var(--cyan);background:#112433}
+.feedback{display:none;margin-top:15px;padding:16px;border:1px solid #3A6658;background:#10251F;border-radius:6px;color:#D5F2E4;font-size:14px}
+.feedback.show{display:block}
+.tag{display:inline-block;color:var(--cyan);font-size:10px;letter-spacing:.12em;margin-bottom:6px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+button.primary{background:#153744;color:#9CEBF1;border:1px solid var(--cyan)}
+button.secondary{background:transparent;color:#B8C8D5;border:1px solid #526779}
+button.primary,button.secondary{padding:13px 18px;border-radius:5px;font-size:12px;letter-spacing:.08em;cursor:pointer;min-height:46px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.progress{font-size:11px;color:var(--muted);letter-spacing:.12em}
+.final{display:none}
+.final.show{display:block}
+footer{border-top:1px solid var(--line);padding:24px 6%;font-size:9px;letter-spacing:.12em;color:#62778A}
+.skip-link{position:absolute;left:12px;top:-100px;z-index:9999;padding:12px 16px;background:#EDF4FA;color:#090D16;border-radius:5px;font-size:16px;font-weight:700}
+.skip-link:focus{top:12px}
+:focus-visible{outline:3px solid #EDF4FA!important;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+@media(prefers-contrast:more){button,.panel,.situation,.choice{border-color:#EDF4FA!important}}
+@media(forced-colors:active){button,.choice{forced-color-adjust:auto;border:1px solid ButtonText}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Salta al contenuto principale</a>
+<header>◇ &nbsp; COGNITIVE RESEARCH SYSTEM / CR—01</header>
+<main id="main" tabindex="-1">
+<div class="overline">RESTITUZIONE FORMATIVA / CR—01</div>
+<h1>Dall'osservazione<br>al giudizio pedagogico.</h1>
+<p class="lead">Hai concluso le attività della sessione. Questa breve restituzione propone alcune occasioni per riflettere su come, nella vita scolastica, passiamo da ciò che osserviamo alle spiegazioni che formuliamo. Non è un test e non produce un punteggio.</p>
+
+<section class="panel">
+<h2>Prima di cominciare</h2>
+<p>Interpretare il comportamento di un alunno è parte del lavoro educativo. Il punto non è eliminare le interpretazioni, ma riconoscere quando un'ipotesi viene formulata rapidamente e rischia di essere scambiata per un fatto.</p>
+<div class="note"><strong>Una distinzione utile</strong><br><br><strong>Osservazione:</strong> descrive ciò che è concretamente accaduto e che, almeno in linea di principio, un'altra persona potrebbe verificare.<br><strong>Interpretazione:</strong> attribuisce un significato, una causa, un'intenzione o uno stato interno a ciò che è accaduto.<br><strong>Etichetta:</strong> tende a trasformare un'interpretazione in una caratteristica stabile della persona.</div>
+<p>Per esempio: «Non ha consegnato il compito» descrive un fatto; «non è interessato» è un'interpretazione; «è un alunno svogliato» rischia di diventare un'etichetta.</p>
+</section>
+
+<section class="panel" id="exercise">
+<div class="step">ESERCITAZIONE 01 / 03</div>
+<div class="progress" id="progress">SITUAZIONE 1 DI 3</div>
+<h2 id="scenarioTitle">Una mancata partecipazione</h2>
+<div class="situation" id="scenarioText">Durante una discussione collettiva, un'alunna non interviene e rimane in silenzio per tutta l'attività.</div>
+<h3>Quale frase descrive più direttamente ciò che è osservabile?</h3>
+<div class="choices" id="choices">
+<button class="choice" data-correct="false">«È poco interessata alla lezione»</button>
+<button class="choice" data-correct="true">«Durante l'attività non è intervenuta verbalmente»</button>
+<button class="choice" data-correct="false">«Non si sente capace di partecipare»</button>
+</div>
+<div class="feedback" id="feedback" aria-live="polite"></div>
+<div class="actions">
+<button class="primary" id="next" disabled>PROSEGUI →</button>
+</div>
+</section>
+
+<section class="panel final" id="conclusion">
+<div class="step">RIFLESSIONE CONCLUSIVA</div>
+<h2>Prima di concludere un giudizio, aprire possibilità.</h2>
+<p>Le situazioni proposte mostrano che uno stesso comportamento può essere compatibile con spiegazioni differenti. Le ipotesi alternative non sono necessariamente vere: servono a ricordare che le informazioni disponibili possono essere incomplete.</p>
+<div class="note"><strong>Una breve sequenza da portare nella pratica</strong><br><br>1. Che cosa ho osservato, precisamente?<br>2. Che cosa sto inferendo o attribuendo?<br>3. Quali altre spiegazioni sono plausibili?<br>4. Quali informazioni potrei raccogliere prima di decidere come intervenire?</div>
+<p>La sospensione del giudizio non significa rinviare ogni decisione o rinunciare alla responsabilità educativa. Significa evitare che una prima impressione diventi, senza verifica, una descrizione definitiva dell'alunno.</p>
+<p><strong>Il punto di partenza non è giudicare meno, ma giudicare meglio.</strong></p>
+<div class="actions"><button class="secondary" id="restart">RIPETI LE ESERCITAZIONI</button></div>
+</section>
+</main>
+<footer>CR—01 / RESTITUZIONE FORMATIVA · LE RISPOSTE NON VENGONO REGISTRATE</footer>
+<script>
+const scenarios=[
+ {title:"Una mancata partecipazione",text:"Durante una discussione collettiva, un'alunna non interviene e rimane in silenzio per tutta l'attività.",question:"Quale frase descrive più direttamente ciò che è osservabile?",choices:[["È poco interessata alla lezione",false],["Durante l'attività non è intervenuta verbalmente",true],["Non si sente capace di partecipare",false]],why:"La seconda frase descrive un comportamento verificabile. Le altre due attribuiscono rispettivamente uno stato di interesse e una possibile percezione di sé: potrebbero essere ipotesi, ma non sono direttamente osservabili."},
+ {title:"Un compito non completato",text:"Al termine dell'attività, un alunno ha svolto soltanto due dei cinque esercizi assegnati.",question:"Quale conclusione è più prudente formulare sulla base delle sole informazioni disponibili?",choices:[["È svogliato e non si impegna",false],["Non ha ancora completato tutti gli esercizi",true],["Non è in grado di affrontare il compito",false]],why:"Sappiamo che due esercizi sono stati svolti e tre no. Non sappiamo ancora perché. Mancanza di impegno e difficoltà di comprensione sono spiegazioni possibili, ma richiedono ulteriori elementi."},
+ {title:"Una reazione durante la lezione",text:"Quando l'insegnante gli chiede di correggere un esercizio, uno studente abbassa lo sguardo, spinge il quaderno e non risponde.",question:"Quale passaggio può aiutare a evitare un'attribuzione affrettata?",choices:[["Concludere che è oppositivo",false],["Considerare il gesto come prova certa di rabbia",false],["Descrivere i gesti e chiedersi quali informazioni mancano",true]],why:"Descrivere i gesti mantiene distinto il dato dall'interpretazione. Rabbia, opposizione, imbarazzo o difficoltà sono ipotesi diverse: per comprenderle occorre raccogliere altre informazioni, anche attraverso un confronto rispettoso con lo studente."}
+];
+let current=0,answered=false;
+const title=document.getElementById("scenarioTitle"),text=document.getElementById("scenarioText"),choices=document.getElementById("choices"),feedback=document.getElementById("feedback"),next=document.getElementById("next"),progress=document.getElementById("progress");
+function render(){
+ const s=scenarios[current];answered=false;title.textContent=s.title;text.textContent=s.text;progress.textContent="SITUAZIONE "+(current+1)+" DI "+scenarios.length;feedback.className="feedback";feedback.textContent="";next.disabled=true;next.textContent=current===scenarios.length-1?"VAI ALLA RIFLESSIONE →":"PROSEGUI →";choices.innerHTML="";
+ const h=document.createElement("h3");h.textContent=s.question;choices.appendChild(h);
+ s.choices.forEach(([label,correct])=>{const b=document.createElement("button");b.className="choice";b.type="button";b.textContent=label;b.addEventListener("click",()=>choose(correct));choices.appendChild(b);});
+}
+function choose(correct){
+ if(answered)return;answered=true;const s=scenarios[current];feedback.className="feedback show";feedback.innerHTML="<span class='tag'>"+(correct?"OSSERVAZIONE RICONOSCIUTA":"PROVIAMO A DISTINGUERE")+"</span><br>"+s.why;next.disabled=false;
+ [...choices.querySelectorAll("button")].forEach(b=>b.disabled=true);
+}
+next.addEventListener("click",()=>{if(!answered)return;if(current<scenarios.length-1){current++;render();document.getElementById("exercise").scrollIntoView({behavior:"smooth",block:"start"});}else{document.getElementById("exercise").style.display="none";document.getElementById("conclusion").classList.add("show");document.getElementById("conclusion").scrollIntoView({behavior:"smooth",block:"start"});}});
+document.getElementById("restart").addEventListener("click",()=>{current=0;document.getElementById("conclusion").classList.remove("show");document.getElementById("exercise").style.display="block";render();document.getElementById("exercise").scrollIntoView({behavior:"smooth",block:"start"});});
+render();
+</script>
+</body>
+</html>
