@@ -114,7 +114,7 @@ let index=0, onset=0, responded=false, rows=[];
 let tabHidden=false;
 document.addEventListener("visibilitychange",()=>{if(document.hidden)tabHidden=true;});
 const buttons=palette.map(c=>{
- const b=document.createElement("button");b.type="button";b.className="response";b.textContent=c.label;b.style.borderBottom="4px solid "+c.hex;b.dataset.color=c.id;
+ const b=document.createElement("button");b.type="button";b.className="response";b.textContent=c.label;b.dataset.color=c.id;
  b.addEventListener("click",()=>answer(c.id,"button"));return b;
 });
 document.getElementById("responses").append(...buttons);
