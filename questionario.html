@@ -956,19 +956,54 @@ document.getElementById("profileForm").addEventListener("submit", function(e) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
+
 document.getElementById("startTask").addEventListener("click", function() {
-  // Controbilanciamento 1:1 tra il blocco cognitivo (Wason + Stroop) e il compito Almost.
-  const blockOrder = Math.random() < 0.5 ? "inhibition_first" : "almost_first";
-  // Ordine interno, indipendente, dei due compiti cognitivi.
-  const cognitiveOrder = Math.random() < 0.5 ? "houde_first" : "stroop_first";
-  const assignedAt = new Date().toISOString();
-  sessionStorage.setItem("taskBlockOrder", blockOrder);
-  sessionStorage.setItem("taskBlockOrderAssignedAt", assignedAt);
-  sessionStorage.setItem("taskOrder", cognitiveOrder);
-  sessionStorage.setItem("taskOrderAssignedAt", assignedAt);
-  const firstCognitiveTask = cognitiveOrder === "houde_first" ? "compito-houde.html" : "compito-stroop.html";
-  window.location.href = blockOrder === "almost_first" ? "almost.html" : firstCognitiveTask;
+
+  // Recupera la sequenza assegnata dal server.
+  let taskOrder = [];
+
+  try {
+    taskOrder = JSON.parse(
+      sessionStorage.getItem("taskOrder") || "[]"
+    );
+  } catch (error) {
+    taskOrder = [];
+  }
+
+  const taskPages = {
+    ALMOST: "almost.html",
+    HOUDE: "compito-houde.html",
+    STROOP: "compito-stroop.html",
+    VPT: "decentramento-prospettive-12.html"
+  };
+
+  // Verifica che partecipante, sessione e sequenza siano disponibili.
+  if (!participant || !session) {
+    alert("Codice partecipante o sessione non disponibili. Torna all'accesso.");
+    window.location.href = "index.html";
+    return;
+  }
+
+  if (
+    taskOrder.length !== 4 ||
+    !taskOrder.every(task => Object.prototype.hasOwnProperty.call(taskPages, task)) ||
+    new Set(taskOrder).size !== 4
+  ) {
+    alert("Sequenza dei compiti non valida. Torna alla pagina iniziale.");
+    window.location.href = "index.html";
+    return;
+  }
+
+  // Memorizza la sequenza e prepara il primo compito.
+  sessionStorage.setItem("CR01_TASK_ORDER", JSON.stringify(taskOrder));
+  sessionStorage.setItem("CR01_TASK_INDEX", "0");
+
+  document.getElementById("startTask").disabled = true;
+  document.getElementById("startTask").textContent = "AVVIO IN CORSO...";
+
+  window.location.href = taskPages[taskOrder[0]];
 });
+
 
 document.getElementById("backToProfile").addEventListener("click", function() {
   document.getElementById("instructionScreen").hidden = true;
