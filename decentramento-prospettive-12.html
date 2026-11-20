@@ -11,6 +11,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script><script>
 (()=>{
 const $=id=>document.getElementById(id),layouts=[{name:"Disposizione a platea",type:"rows"},{name:"Disposizione a ferro di cavallo",type:"u"},{name:"Disposizione a isole",type:"islands"}];
+const EYE_HEIGHT=1.52,SEAT_OFFSET=.82;
 let session=0,deskPositions=[],renderer,scene,camera,practice=[],trials=[],trialIndex=0,phase="practice",trialStart=0,results=[],answered=false,responseTimeout=null,responseTicker=null;
 function positions(type){
   const p=[];
@@ -78,8 +79,7 @@ function buildScene(){scene=new THREE.Scene();scene.background=new THREE.Color(0
     box(.09,.72,.09,.43,.38,.27,0x596575,deskGroup);
     if(i<12){
       const studentGroup=new THREE.Group();
-      const seatOffset=.82;
-      studentGroup.position.set(d.x+Math.sin(d.heading||0)*seatOffset,0,d.z+Math.cos(d.heading||0)*seatOffset);
+      studentGroup.position.set(d.x+Math.sin(d.heading||0)*SEAT_OFFSET,0,d.z+Math.cos(d.heading||0)*SEAT_OFFSET);
       studentGroup.rotation.y=d.heading||0;
       scene.add(studentGroup);
       seatedStudent(d,i,studentGroup);
@@ -91,13 +91,16 @@ function render(){if(renderer)renderer.render(scene,camera);}
 let cameraLookTarget=null,viewReady=false,viewAnimation=0;
 function setView(trial,onRotationStart){
   const d=deskPositions.find(x=>x.id===trial.bank);
-  const fromPos=camera.position.clone(),fromTarget=cameraLookTarget?cameraLookTarget.clone():new THREE.Vector3(0,1.3,0),fromFov=camera.fov;
   const dx=d.tx-d.x,dz=d.tz-d.z,length=Math.hypot(dx,dz)||1,dirX=dx/length,dirZ=dz/length;
-  const eyeOffset=.82,toPos=new THREE.Vector3(d.x-dirX*eyeOffset,1.42,d.z-dirZ*eyeOffset);
-  const baseTarget=new THREE.Vector3(toPos.x+dirX*10,1.38,toPos.z+dirZ*10);
-  const toFov=trial.fov||66,duration=1050,start=performance.now(),token=++viewAnimation;
-  function frame(now){if(token!==viewAnimation)return;const raw=Math.min(1,(now-start)/duration),t=raw<.5?4*raw*raw*raw:1-Math.pow(-2*raw+2,3)/2;camera.position.lerpVectors(fromPos,toPos,t);const look=fromTarget.clone().lerp(baseTarget,t);camera.lookAt(look);camera.fov=fromFov+(toFov-fromFov)*t;camera.updateProjectionMatrix();render();if(raw<1)requestAnimationFrame(frame);else{camera.position.copy(toPos);camera.fov=toFov;camera.updateProjectionMatrix();startPanorama(trial,onRotationStart);}}
-  requestAnimationFrame(frame);
+  // Il punto di vista coincide con la posizione degli occhi dell'alunno, dietro il banco e lungo il suo asse di osservazione.
+  const toPos=new THREE.Vector3(d.x-dirX*SEAT_OFFSET,EYE_HEIGHT,d.z-dirZ*SEAT_OFFSET);
+  const baseTarget=new THREE.Vector3(toPos.x+dirX*10,EYE_HEIGHT,toPos.z+dirZ*10);
+  camera.position.copy(toPos);
+  camera.fov=trial.fov||66;
+  camera.lookAt(baseTarget);
+  camera.updateProjectionMatrix();
+  render();
+  startPanorama(trial,onRotationStart);
 }
 function startPanorama(trial,onStart){const duration=3000,half=70*Math.PI/180,start=performance.now(),direction=trial.direction,baseQuaternion=camera.quaternion.clone(),axis=new THREE.Vector3(0,1,0),yawQuaternion=new THREE.Quaternion();
   const fromYaw=direction===1?-half:half,toYaw=-fromYaw,token=++viewAnimation;
@@ -112,7 +115,7 @@ function makeSequence(ids){return shuffle(ids).slice(0,5).map(bank=>makeTrial(ba
 function startSession(){cameraLookTarget=null;viewReady=false;$('task').classList.remove('hidden');$('done').classList.add('hidden');if(renderer){renderer.dispose();renderer=null;}deskPositions=positions(layouts[session].type).slice(0,13);if(deskPositions.length!==13)throw new Error('Configurazione aula non valida: attesi 13 banchi');const studentIds=deskPositions.slice(0,12).map(d=>d.id);buildScene();trials=makeSequence(studentIds);trialIndex=0;phase="test";$('sessionLabel').textContent="Configurazione "+(session+1)+" di 3 · "+layouts[session].name;showTrial();}
 function clearResponseClock(){if(responseTimeout!==null)clearTimeout(responseTimeout);if(responseTicker!==null)clearInterval(responseTicker);responseTimeout=null;responseTicker=null;}
 function startResponseClock(){trialStart=performance.now();const update=()=>{const left=Math.max(0,8000-(performance.now()-trialStart));$('timer').textContent=(left/1000).toFixed(1).replace('.',',')+' s';};update();responseTimeout=setTimeout(()=>answer(null,true),8000);responseTicker=setInterval(update,100);}
-function showTrial(){answered=false;viewReady=false;const current=trials[trialIndex];$('phasePill').textContent='Prova sperimentale';$('trialCounter').textContent=(trialIndex+1)+' di 5';$('bar').style.width=(trialIndex/5*100)+'%';$('feedback').textContent='La telecamera si sta posizionando…';mapSvg($('mapAnswer'),'answer',[],false);$('timer').textContent='8,0 s';setView(current,()=>{viewReady=true;$('feedback').textContent='Indica sulla mappa il banco corrispondente.';startResponseClock();});}
+function showTrial(){answered=false;viewReady=false;const current=trials[trialIndex];$('phasePill').textContent='Prova sperimentale';$('trialCounter').textContent=(trialIndex+1)+' di 5';$('bar').style.width=(trialIndex/5*100)+'%';$('feedback').textContent='Preparati a osservare la scena…';mapSvg($('mapAnswer'),'answer',[],false);$('timer').textContent='8,0 s';setView(current,()=>{viewReady=true;$('feedback').textContent='Indica sulla mappa il banco corrispondente.';startResponseClock();});}
 function answer(response,expired=false){if(answered||!viewReady)return;answered=true;viewReady=false;clearResponseClock();const current=trials[trialIndex],target=current.bank,rt=expired?8000:Math.min(8000,Math.round(performance.now()-trialStart)),correct=response===target;results.push({session:session+1,layout:layouts[session].name,trial:trialIndex+1,camera_fov:current.fov,rotation_direction:current.direction===1?"sinistra-destra":"destra-sinistra",target_bank:target,response_bank:response===null?"":response,correct:correct?1:0,response_time_ms:rt,timed_out:expired?1:0});$('feedback').textContent=' ';setTimeout(()=>{trialIndex++;if(trialIndex<5)showTrial();else endSession();},120);}
 function endSession(){$('task').classList.add('hidden');if(session<2){session++;startSession();}else finish();}
 function finish(){$('done').classList.remove('hidden');const score=results.reduce((s,r)=>s+r.correct,0),mean=Math.round(results.reduce((s,r)=>s+r.response_time_ms,0)/results.length),timeouts=results.reduce((s,r)=>s+r.timed_out,0);$('summary').textContent='Sessioni completate: 3. Risposte corrette: '+score+' su 15. Risposte scadute: '+timeouts+'. Tempo medio di risposta: '+mean+' ms.';}
