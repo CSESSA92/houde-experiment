@@ -151,11 +151,13 @@ resizeMain();
 
 function renderOption(def){
  const width=400,height=300;
+ // The observer is shown in the participant's scene, but must not occlude the view from that observer's own position.
+ avatar.visible=false;markerRing.visible=false;
  const rt=new THREE.WebGLRenderTarget(width,height,{depthBuffer:true});
  const cam=makeCamera(def,width/height);
  renderer.setRenderTarget(rt);renderer.setClearColor(0xe8edf2,1);renderer.clear();renderer.render(scene,cam);
  const pixels=new Uint8Array(width*height*4);renderer.readRenderTargetPixels(rt,0,0,width,height,pixels);
- renderer.setRenderTarget(null);renderer.setClearColor(0xdce5ee,1);
+ renderer.setRenderTarget(null);renderer.setClearColor(0xdce5ee,1);avatar.visible=true;markerRing.visible=true;
  const out=document.createElement('canvas');out.width=width;out.height=height;
  const ctx=out.getContext('2d');const image=ctx.createImageData(width,height);
  for(let y=0;y<height;y++){const src=(height-1-y)*width*4;image.data.set(pixels.subarray(src,src+width*4),y*width*4);}
