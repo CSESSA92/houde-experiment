@@ -78,7 +78,8 @@ function buildScene(){scene=new THREE.Scene();scene.background=new THREE.Color(0
     box(.09,.72,.09,.43,.38,.27,0x596575,deskGroup);
     if(i<12){
       const studentGroup=new THREE.Group();
-      const seatOffset=.82;\n      studentGroup.position.set(d.x+Math.sin(d.heading||0)*seatOffset,0,d.z+Math.cos(d.heading||0)*seatOffset);
+      const seatOffset=.82;
+      studentGroup.position.set(d.x+Math.sin(d.heading||0)*seatOffset,0,d.z+Math.cos(d.heading||0)*seatOffset);
       studentGroup.rotation.y=d.heading||0;
       scene.add(studentGroup);
       seatedStudent(d,i,studentGroup);
