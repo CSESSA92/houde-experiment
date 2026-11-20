@@ -28,13 +28,14 @@ Per mostrare la diagnostica delle telecamere aggiungere `?debug=1` all'URL. La d
 - Altezza delle telecamere: 1,25 m.
 - Distanza orizzontale dal centro: 1,50 m.
 - Campo visivo verticale: 40°.
+- Inclinazione risultante rispetto all'orizzontale: circa 17,7° (calcolata da quota camera, quota del punto di mira e distanza orizzontale).
 - Punto di mira: (0, 0, 0,765).
 - Sistema di coordinate: X larghezza, Y profondità, Z verticale.
 - C0: lato del partecipante (Y negativo).
 - C180: lato dell'altro osservatore (Y positivo).
 - C90 e C270: lati corti del banco.
 
-Le quattro telecamere condividono altezza, distanza, inclinazione risultante, FOV e punto di mira; cambia l'azimut.
+Le quattro telecamere condividono altezza, distanza, inclinazione risultante, FOV e punto di mira; cambia l'azimut. L'inclinazione di circa 17,7° è ancora da verificare: potrebbe essere troppo bassa per rendere leggibili i dettagli sulla copertina del libro.
 
 ## Avvertenze metodologiche
 
