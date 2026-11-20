@@ -77,8 +77,49 @@ function seatedStudent(d,index,parent){
   cylinder(.065,.075,.43,-.16,.23,-.12,0x303b4c,parent);cylinder(.065,.075,.43,.16,.23,-.12,0x303b4c,parent);
 }
 function teacher(){const x=0,z=-6.08;box(.62,.82,.34,x,1.05,z,0x344b68);sphere(.2,x,1.62,z,0xc98f6b);sphere(.205,x,1.71,z-.015,0x34302d,1,.58,1);box(.16,.65,.16,x-.38,1.05,z+.04,0x344b68);box(.16,.65,.16,x+.38,1.05,z+.04,0x344b68);}
+function addRoomLandmarks(){
+  // Finestre identiche sulle due pareti laterali: telaio, vetro e traverso.
+  [-1,1].forEach(side=>{
+    [-2.35,2.15].forEach(z=>{
+      const x=side*5.88;
+      box(.07,1.18,1.58,x,2.28,z,0x6c7786);
+      box(.035,1.02,1.42,x-side*.045,2.28,z,0x8fc5df);
+      box(.055,1.08,.075,x-side*.075,2.28,z,0xe7edf2);
+      box(.055,.075,1.48,x-side*.075,2.28,z,0xe7edf2);
+      box(.055,.055,1.48,x-side*.075,2.28,z,0xe7edf2);
+      box(.055,1.48,.055,x-side*.075,2.28,z,0xe7edf2);
+    });
+  });
+  // Parete posteriore: porta centrale con stipiti e maniglia.
+  box(1.38,2.45,.10,0,1.22,7.08,0x76543d);
+  box(1.16,2.28,.035,0,1.18,7.015,0x9a704e);
+  box(.09,2.48,.16,-.73,1.24,7.0,0xe7e2d7);
+  box(.09,2.48,.16,.73,1.24,7.0,0xe7e2d7);
+  box(1.55,.10,.16,0,2.48,7.0,0xe7e2d7);
+  sphere(.055,.46,1.12,6.94,0xd8bd76,.8,1,.8);
+  // Due librerie gemelle ai lati della porta, con ripiani e dorsi di libri.
+  [-1,1].forEach(side=>{
+    const x=side*2.55,z=7.04;
+    box(1.28,2.15,.34,x,1.08,z,0x76543d);
+    box(1.12,1.98,.08,x,1.08,z-.19,0x493a31);
+    [0.48,1.02,1.56].forEach(y=>{
+      box(1.20,.07,.38,x,y,z-.23,0xb18a62);
+      [-.42,-.25,-.08,.10,.28,.43].forEach((offset,i)=>{
+        box(.10,.28+(i%3)*.07,.10,x+offset,y+.16,z-.27,[0x567b9b,0x9b665c,0x6d8b69,0xc29a58][i%4]);
+      });
+    });
+  });
+  // Orologio leggibile come riferimento circolare sulla parete posteriore.
+  const clock=cylinder(.34,.34,.075,0,3.35,6.98,0xf0eee5);
+  clock.rotation.x=Math.PI/2;
+  const rim=cylinder(.38,.38,.045,0,3.35,7.025,0x48566a);
+  rim.rotation.x=Math.PI/2;
+  box(.025,.24,.025,0,3.35,6.925,0x29384a);
+  box(.19,.025,.025,.075,3.35,6.925,0x29384a);
+}
 function buildScene(){scene=new THREE.Scene();scene.background=new THREE.Color(0xdce7f2);scene.add(new THREE.HemisphereLight(0xffffff,0x8290a5,2));const light=new THREE.DirectionalLight(0xffffff,1.15);light.position.set(3,9,5);scene.add(light);
-  box(12,.18,14,0,-.12,.2,0xb9c3ce);box(12,4,.15,0,2,-6.8,0xe7e2d7);box(.15,4,14,-6,2,.2,0xe7e2d7);box(.15,4,14,6,2,.2,0xe7e2d7);
+  box(12,.18,14,0,-.12,.2,0xb9c3ce);box(12,4,.15,0,2,-6.8,0xe7e2d7);box(.15,4,14,-6,2,.2,0xe7e2d7);box(.15,4,14,6,2,.2,0xe7e2d7);box(12,4,.15,0,2,7.2,0xe7e2d7);
+  addRoomLandmarks();
   box(4,1.45,.12,0,2.3,-6.68,0x29485b);box(2.5,.82,1.05,0,.48,-5.65,0x98734f);teacher();
   deskPositions.slice(0,13).forEach((d,i)=>{
     const deskGroup=new THREE.Group();
