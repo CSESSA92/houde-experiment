@@ -29,20 +29,26 @@ function positions(type){
       p.push({x,z:4.1,tx:x,tz:-6.5,heading:0});
     }
   }else{
-    // Le isole mantengono i tre posti di ogni gruppo rivolti verso la cattedra,
-    // coerentemente con l'orientamento già previsto nel prototipo.
+    // In ciascuna isola i tre posti sono orientati verso il centro del gruppo.
     const centers=[[-3.0,-2.5],[3.0,-2.5],[-3.0,2.0],[3.0,2.0]];
     centers.forEach(([x,z])=>{
-      p.push({x:x-.55,z:z-.35,tx:x,tz:-6.5,heading:0},
-             {x:x+.55,z:z-.35,tx:x,tz:-6.5,heading:0},
-             {x,z:z+.55,tx:x,tz:-6.5,heading:0});
+      const seats=[
+        {x:x-.55,z:z-.35,tx:x,tz:z},
+        {x:x+.55,z:z-.35,tx:x,tz:z},
+        {x,z:z+.55,tx:x,tz:z}
+      ];
+      seats.forEach(s=>{
+        const dx=s.tx-s.x,dz=s.tz-s.z;
+        s.heading=Math.atan2(-dx,-dz);
+        p.push(s);
+      });
     });
   }
   const students=p.slice(0,12);
   const emptyDesk={x:4.65,z:5.0,tx:0,tz:-6.5,heading:0};
   return [...students,emptyDesk].map((v,i)=>({id:i+1,...v}));
 }
-function mapSvg(svg,interactive,highlight=[],showLabels=true){const scale=47,cx=300,frontY=48,point=d=>({x:cx+d.x*scale,y:frontY+(d.z+6.2)*scale});let s='<rect x="35" y="28" width="530" height="640" rx="14" fill="#dce4ec" stroke="#8795a8" stroke-width="3"/><rect x="205" y="38" width="190" height="13" rx="3" fill="#29485b"/><text x="300" y="23" class="map-teacher">LAVAGNA</text><rect x="245" y="65" width="110" height="35" rx="5" fill="#98734f"/><text x="300" y="87" fill="#fff" font-size="12" text-anchor="middle">CATTEDRA</text>';deskPositions.forEach(d=>{const q=point(d),cls=highlight.includes(d.id)?'desk selected':'desk',click=interactive?' data-desk="'+d.id+'"':'';s+='<g'+click+'><rect class="'+cls+'" x="'+(q.x-17)+'" y="'+(q.y-12)+'" width="34" height="24" rx="4"/>'+(showLabels?'<text class="map-label" x="'+q.x+'" y="'+q.y+'">'+d.id+'</text>':'')+'</g>';});svg.innerHTML=s;if(interactive)svg.querySelectorAll('[data-desk]').forEach(el=>el.addEventListener('click',()=>interactive==='select'?toggleDesk(Number(el.dataset.desk)):answer(Number(el.dataset.desk))));}
+function mapSvg(svg,interactive,highlight=[],showLabels=true){const scale=47,cx=300,frontY=48,point=d=>({x:cx+d.x*scale,y:frontY+(d.z+6.2)*scale});let s='<rect x="35" y="28" width="530" height="640" rx="14" fill="#dce4ec" stroke="#8795a8" stroke-width="3"/><rect x="205" y="38" width="190" height="13" rx="3" fill="#29485b"/><text x="300" y="23" class="map-teacher">LAVAGNA</text><rect x="245" y="65" width="110" height="35" rx="5" fill="#98734f"/><text x="300" y="87" fill="#fff" font-size="12" text-anchor="middle">CATTEDRA</text>';deskPositions.forEach(d=>{const q=point(d),cls=highlight.includes(d.id)?'desk selected':'desk',click=interactive?' data-desk="'+d.id+'"':'',angle=-(d.heading||0)*180/Math.PI;s+='<g'+click+'><rect class="'+cls+'" x="'+(q.x-24.7)+'" y="'+(q.y-16.9)+'" width="49.4" height="33.8" rx="4" transform="rotate('+angle+' '+q.x+' '+q.y+')"/>'+(showLabels?'<text class="map-label" x="'+q.x+'" y="'+q.y+'">'+d.id+'</text>':'')+'</g>';});svg.innerHTML=s;if(interactive)svg.querySelectorAll('[data-desk]').forEach(el=>el.addEventListener('click',()=>interactive==='select'?toggleDesk(Number(el.dataset.desk)):answer(Number(el.dataset.desk))));}
 function material(color){return new THREE.MeshStandardMaterial({color,roughness:.88});}
 function box(w,h,d,x,y,z,color,parent=scene){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material(color));m.position.set(x,y,z);parent.add(m);return m;}
 function sphere(r,x,y,z,color,sx=1,sy=1,sz=1,parent=scene){const m=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),material(color));m.position.set(x,y,z);m.scale.set(sx,sy,sz);parent.add(m);return m;}
