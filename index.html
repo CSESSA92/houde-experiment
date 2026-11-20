@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -5,11 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#090D16">
 <title>CR-01 | Cognitive Research</title>
+
 <style>
 :root {
   --bg:#090D16;
   --panel:#111A27;
-  --panel2:#151F2D;
   --line:#26384A;
   --cyan:#58D9E8;
   --white:#EDF4FA;
@@ -23,7 +24,7 @@ body {
     radial-gradient(ellipse at 50% 0%, #14283a 0%, transparent 52%),
     var(--bg);
   color:var(--white);
-  font-family:Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   letter-spacing:.015em;
 }
 header {
@@ -93,30 +94,11 @@ h1 span { color:var(--cyan); }
   letter-spacing:.2em;
   margin-bottom:25px;
 }
-label {
-  display:block;
-  color:#B7C5D1;
-  font-size:12px;
-  margin:18px 0 9px;
-}
-input,select {
-  width:100%;
-  background:#0A111B;
-  color:var(--white);
-  border:1px solid #34485C;
-  padding:15px;
-  border-radius:5px;
-  font-size:14px;
-  outline:none;
-}
-input:focus,select:focus {
-  border-color:var(--cyan);
-  box-shadow:0 0 0 2px #58D9E81c;
-}
 button {
   width:100%;
   margin-top:27px;
   padding:16px;
+  min-height:48px;
   border:1px solid var(--cyan);
   border-radius:5px;
   background:#153744;
@@ -126,10 +108,15 @@ button {
   font-weight:600;
   cursor:pointer;
   transition:.2s;
+  touch-action:manipulation;
 }
 button:hover {
   background:#1c4b5a;
   box-shadow:0 0 22px #58D9E822;
+}
+button:disabled {
+  opacity:.55;
+  cursor:wait;
 }
 .status {
   display:flex;
@@ -146,6 +133,13 @@ button:hover {
   border-radius:50%;
   box-shadow:0 0 9px var(--cyan);
 }
+.message {
+  color:#FF9A9A;
+  font-size:12px;
+  line-height:1.6;
+  margin-top:15px;
+}
+.hidden { display:none; }
 footer {
   border-top:1px solid var(--line);
   padding:25px 6%;
@@ -155,34 +149,51 @@ footer {
   font-size:9px;
   letter-spacing:.13em;
 }
-.hidden { display:none; }
-.message {
-  color:#FF9A9A;
-  font-size:12px;
-  margin-top:12px;
+.skip-link {
+  position:absolute;
+  left:12px;
+  top:-100px;
+  z-index:9999;
+  padding:12px 16px;
+  background:#EDF4FA;
+  color:#090D16;
+  border-radius:5px;
+  font-size:16px;
+  font-weight:700;
 }
+.skip-link:focus { top:12px; }
+:focus-visible {
+  outline:3px solid #EDF4FA!important;
+  outline-offset:3px;
+}
+main:focus { outline:none; }
+
 @media(max-width:600px) {
   header { padding:0 5%; }
   main { margin-top:60px; }
   .panel { padding:22px; margin-top:35px; }
   footer { gap:12px; flex-direction:column; }
 }
-
-/* Accessibilità di base: tastiera, focus visibile, touch e movimento ridotto. */
-.skip-link{position:absolute;left:12px;top:-100px;z-index:9999;padding:12px 16px;background:#EDF4FA;color:#090D16;border-radius:5px;font-size:16px;font-weight:700}
-.skip-link:focus{top:12px}
-:focus-visible{outline:3px solid #EDF4FA!important;outline-offset:3px}
-main:focus{outline:none}
-input,select,textarea{font-size:16px}
-button{min-height:44px;touch-action:manipulation}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
-@media(prefers-contrast:more){button,input,select,textarea,.panel,.notice,.card{border-color:#EDF4FA!important}}
-@media(forced-colors:active){button,.card,input,select,textarea{forced-color-adjust:auto;border:1px solid ButtonText}}
-
+@media(prefers-reduced-motion:reduce) {
+  *,*::before,*::after {
+    scroll-behavior:auto!important;
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+  }
+}
+@media(forced-colors:active) {
+  button { forced-color-adjust:auto; border:1px solid ButtonText; }
+}
 </style>
 </head>
+
 <body>
-<a class="skip-link" href="#main-content">Salta al contenuto principale</a>
+
+<a class="skip-link" href="#main-content">
+  Salta al contenuto principale
+</a>
+
 <header>
   <div class="brand">
     <div class="symbol"></div>
@@ -192,47 +203,45 @@ button{min-height:44px;touch-action:manipulation}
 </header>
 
 <main id="main-content" tabindex="-1">
+
   <div class="overline">EXPERIMENTAL ENVIRONMENT</div>
-  <h1>Human reasoning.<br><span>Beyond intuition.</span></h1>
+
+  <h1>
+    Human reasoning.<br>
+    <span>Beyond intuition.</span>
+  </h1>
+
   <p class="intro">
     Ambiente sperimentale dedicato allo studio dei processi
     di ragionamento, inibizione e controllo cognitivo.
-    La somministrazione prevede una sessione unica, senza training né post-test.
+    La somministrazione prevede una sessione unica,
+    senza training né post-test.
   </p>
 
   <section class="panel" id="access">
+
     <div class="panel-title">01 / PARTICIPANT ACCESS</div>
-    <label for="participant">CODICE PARTECIPANTE</label>
-    <input id="participant" type="text"
-      placeholder="Inserisci il codice assegnato">
 
-    <label for="session">SESSIONE SPERIMENTALE</label>
-    <select id="session">
-      <option value="">Seleziona la sessione</option>
-      <option value="main">Somministrazione unica</option>
-    </select>
-
-    <div id="error" class="message hidden">
-      Inserisci il codice e seleziona la sessione.
-    </div>
-
-    <button id="start">INITIALIZE SESSION →</button>
-
-    <div class="status">
-      <span class="dot"></span>
-      RESEARCH INTERFACE / PROTOTYPE
-    </div>
-  </section>
-
-  <section class="panel hidden" id="welcome">
-    <div class="panel-title">02 / SESSION INITIALIZED</div>
-    <h2 style="font-weight:400">Accesso predisposto.</h2>
     <p class="intro">
-      L'interfaccia è pronta per le successive fasi
-      della sperimentazione.
+      Per iniziare la sessione sperimentale,
+      premi il pulsante sottostante.
+      Il sistema predisporrà automaticamente
+      il tuo accesso.
     </p>
-    <button id="back">TORNA ALL'ACCESSO</button>
+
+    <div id="error" class="message hidden" role="alert"></div>
+
+    <button id="start" type="button">
+      INITIALIZE SESSION →
+    </button>
+
+    <div class="status" aria-live="polite">
+      <span class="dot"></span>
+      <span id="statusText">RESEARCH INTERFACE / READY</span>
+    </div>
+
   </section>
+
 </main>
 
 <footer>
@@ -241,33 +250,162 @@ button{min-height:44px;touch-action:manipulation}
 </footer>
 
 <script>
-const start = document.getElementById("start");
-const back = document.getElementById("back");
 
-start.addEventListener("click", () => {
-  const participant = document.getElementById("participant").value.trim();
-  const session = document.getElementById("session").value;
-  const error = document.getElementById("error");
+const API_URL =
+"https://script.google.com/macros/s/AKfycbzSVkpJE_cXYQSiLE0xnKjtUbLsevXeYzcyaKlz1eFjQrkcdpB5xsjT-nq_0sqM3BR-YA/exec";
 
-  if (!participant || !session) {
-    error.classList.remove("hidden");
-    return;
+const startButton = document.getElementById("start");
+const errorBox = document.getElementById("error");
+const statusText = document.getElementById("statusText");
+
+function getClientToken() {
+
+  let token = localStorage.getItem("CR01_CLIENT_TOKEN");
+
+  if (!token) {
+
+    if (window.crypto && crypto.randomUUID) {
+      token = crypto.randomUUID();
+    } else {
+      token =
+        "CR01_" +
+        Date.now().toString(36) +
+        "_" +
+        Math.random().toString(36).substring(2, 18);
+    }
+
+    localStorage.setItem("CR01_CLIENT_TOKEN", token);
   }
 
-  error.classList.add("hidden");
+  return token;
+}
 
-// Salva temporaneamente il codice e la sessione
-sessionStorage.setItem("participant", participant);
-sessionStorage.setItem("session", session);
 
-// Passa al questionario
-window.location.href = "questionario.html";
+function requestParticipant(token) {
+
+  return new Promise((resolve, reject) => {
+
+    const callbackName = "cr01Callback";
+
+    const oldScript = document.getElementById("cr01-api-script");
+    if (oldScript) oldScript.remove();
+
+    let completed = false;
+
+    const script = document.createElement("script");
+    script.id = "cr01-api-script";
+
+    const timeout = setTimeout(() => {
+      finish();
+      reject(new Error(
+        "Il server non ha risposto. Controlla la connessione e riprova."
+      ));
+    }, 20000);
+
+    function finish() {
+      if (completed) return;
+      completed = true;
+      clearTimeout(timeout);
+      script.remove();
+      delete window[callbackName];
+    }
+
+    window[callbackName] = function(data) {
+
+      finish();
+
+      if (!data || data.success !== true) {
+        reject(new Error(
+          data && data.error
+            ? data.error
+            : "Risposta non valida dal server."
+        ));
+        return;
+      }
+
+      resolve(data);
+    };
+
+    script.onerror = function() {
+      finish();
+      reject(new Error(
+        "Impossibile contattare il server sperimentale."
+      ));
+    };
+
+    script.src =
+      API_URL +
+      "?action=nuovoPartecipante" +
+      "&token=" + encodeURIComponent(token) +
+      "&callback=" + callbackName;
+
+    document.head.appendChild(script);
+
+  });
+}
+
+
+startButton.addEventListener("click", async () => {
+
+  errorBox.classList.add("hidden");
+  errorBox.textContent = "";
+
+  startButton.disabled = true;
+  startButton.textContent = "INITIALIZING...";
+  statusText.textContent = "CONNECTING TO RESEARCH SERVER";
+
+  try {
+
+    const token = getClientToken();
+
+    const result = await requestParticipant(token);
+
+    const participant = result.participant_id;
+    const session = "main";
+    const tasks = result.tasks;
+
+    if (!participant || !Array.isArray(tasks) || tasks.length !== 4) {
+      throw new Error(
+        "Il server non ha restituito tutti i dati necessari."
+      );
+    }
+
+    // Memorizzazione persistente sul dispositivo
+    localStorage.setItem("participant", participant);
+    localStorage.setItem("session", session);
+    localStorage.setItem("CR01_TASK_ORDER", JSON.stringify(tasks));
+    localStorage.setItem("CR01_SEQUENCE", result.sequence || "");
+
+    // Dati della sessione corrente
+    sessionStorage.setItem("participant", participant);
+    sessionStorage.setItem("session", session);
+    sessionStorage.setItem("taskOrder", JSON.stringify(tasks));
+    sessionStorage.setItem("sequence", result.sequence || "");
+
+    statusText.textContent = "SESSION INITIALIZED";
+
+    startButton.textContent = "ACCESS CONFIRMED";
+
+    // Passaggio al questionario
+    window.location.href = "questionario.html";
+
+  } catch (error) {
+
+    errorBox.textContent =
+      error.message || "Si è verificato un errore.";
+
+    errorBox.classList.remove("hidden");
+
+    startButton.disabled = false;
+    startButton.textContent = "RETRY INITIALIZATION →";
+
+    statusText.textContent = "CONNECTION ERROR";
+
+  }
+
 });
 
-back.addEventListener("click", () => {
-  document.getElementById("welcome").classList.add("hidden");
-  document.getElementById("access").classList.remove("hidden");
-});
 </script>
+
 </body>
 </html>
