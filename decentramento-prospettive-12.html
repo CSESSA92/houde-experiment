@@ -32,10 +32,11 @@ function positions(type){
     // In ciascuna isola i tre posti sono orientati verso il centro del gruppo.
     const centers=[[-3.0,-2.5],[3.0,-2.5],[-3.0,2.0],[3.0,2.0]];
     centers.forEach(([x,z])=>{
+      // Distanze calibrate per evitare sovrapposizioni tra i piani dei banchi.
       const seats=[
-        {x:x-.55,z:z-.35,tx:x,tz:z},
-        {x:x+.55,z:z-.35,tx:x,tz:z},
-        {x,z:z+.55,tx:x,tz:z}
+        {x:x-.90,z:z-.55,tx:x,tz:z},
+        {x:x+.90,z:z-.55,tx:x,tz:z},
+        {x,z:z+1.00,tx:x,tz:z}
       ];
       seats.forEach(s=>{
         const dx=s.tx-s.x,dz=s.tz-s.z;
