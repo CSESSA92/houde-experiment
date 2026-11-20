@@ -125,11 +125,13 @@ const markerRing = new THREE.Mesh(new THREE.TorusGeometry(.105,.009,8,32),new TH
 markerRing.position.set(0,1.5,.01);scene.add(markerRing);
 
 const CAMERA_DISTANCE=1.5, CAMERA_HEIGHT=1.25, CAMERA_FOV=40;
+// Four candidate book orientations rendered from the identical C180 viewpoint.
+ // Zero degrees is the physically correct, unchanged book orientation.
 const cameraDefs=[
- {id:'C0',azimuth:0,label:'A'},
- {id:'C90',azimuth:90,label:'B'},
- {id:'C180',azimuth:180,label:'C'},
- {id:'C270',azimuth:270,label:'D'}
+ {id:'R0',bookRotationDeg:0},
+ {id:'R30',bookRotationDeg:30},
+ {id:'R-30',bookRotationDeg:-30},
+ {id:'R60',bookRotationDeg:60}
 ];
 function makeCamera(def,aspect=4/3){
  const a=THREE.MathUtils.degToRad(def.azimuth);
@@ -139,7 +141,7 @@ function makeCamera(def,aspect=4/3){
  c.lookAt(target);
  return c;
 }
-const participantCamera=makeCamera(cameraDefs[0],canvas.clientWidth/Math.max(1,canvas.clientHeight));
+const participantCamera=makeCamera({azimuth:0},canvas.clientWidth/Math.max(1,canvas.clientHeight));
 function resizeMain(){
  const w=Math.max(1,canvas.clientWidth),h=Math.max(1,canvas.clientHeight);
  renderer.setSize(w,h,false);participantCamera.aspect=w/h;participantCamera.updateProjectionMatrix();
@@ -151,11 +153,15 @@ resizeMain();
 
 function renderOption(def){
  const width=400,height=300;
- // The observer is shown in the participant's scene, but must not occlude the view from that observer's own position.
+ // All alternatives use the same opposite-observer camera (C180).
+ // Only the 3D book orientation changes; rendered images are never rotated in 2D.
  avatar.visible=false;markerRing.visible=false;
+ const previousRotation=book.rotation.z;
+ book.rotation.z=THREE.MathUtils.degToRad(def.bookRotationDeg);
  const rt=new THREE.WebGLRenderTarget(width,height,{depthBuffer:true});
- const cam=makeCamera(def,width/height);
+ const cam=makeCamera({azimuth:180},width/height);
  renderer.setRenderTarget(rt);renderer.setClearColor(0xe8edf2,1);renderer.clear();renderer.render(scene,cam);
+ book.rotation.z=previousRotation;
  const pixels=new Uint8Array(width*height*4);renderer.readRenderTargetPixels(rt,0,0,width,height,pixels);
  renderer.setRenderTarget(null);renderer.setClearColor(0xdce5ee,1);avatar.visible=true;markerRing.visible=true;
  const out=document.createElement('canvas');out.width=width;out.height=height;
@@ -198,11 +204,11 @@ document.querySelectorAll('[data-confidence]').forEach(button=>button.addEventLi
 function updateDebug(){
  if(new URLSearchParams(location.search).get('debug')!=='1')return;
  debugEl.style.display='block';
- debugEl.textContent='DEBUG — ordine opzioni: '+shuffled.map((d,i)=>(String.fromCharCode(65+i)+'='+d.id)).join(' | ')+'\nRisposta corretta prevista: C180 (da verificare nella revisione geometrica).';
+ debugEl.textContent='DEBUG — ordine opzioni: '+shuffled.map((d,i)=>(String.fromCharCode(65+i)+'='+d.id+' ('+d.bookRotationDeg+'°)')).join(' | ')+'\nRisposta corretta: R0 (orientamento originale del libro); tutte le viste sono dalla telecamera C180.';
 }
 saveBtn.addEventListener('click',()=>{
  if(!selected||confidence===null)return;
- const result={stimulus_id:'B1',selected_camera:selected.id,correct_camera:'C180',accuracy:selected.id==='C180'?1:0,option_order:shuffled.map((d,i)=>({option:String.fromCharCode(65+i),camera_id:d.id})),selected_at_ms:Math.round(selectedAt-trialVisibleAt),confidence,confidence_at_ms:Math.round(confidenceAt-trialVisibleAt),device_type:matchMedia('(pointer:coarse)').matches?'touch':'mouse_or_trackpad',viewport_width:window.innerWidth,viewport_height:window.innerHeight,orientation:window.innerWidth>=window.innerHeight?'landscape':'portrait',prototype_only:true};
+ const result={stimulus_id:'B1',selected_variant:selected.id,selected_book_rotation_deg:selected.bookRotationDeg,correct_variant:'R0',correct_book_rotation_deg:0,accuracy:selected.id==='R0'?1:0,option_order:shuffled.map((d,i)=>({option:String.fromCharCode(65+i),variant_id:d.id,book_rotation_deg:d.bookRotationDeg,camera_id:'C180'})),selected_at_ms:Math.round(selectedAt-trialVisibleAt),confidence,confidence_at_ms:Math.round(confidenceAt-trialVisibleAt),device_type:matchMedia('(pointer:coarse)').matches?'touch':'mouse_or_trackpad',viewport_width:window.innerWidth,viewport_height:window.innerHeight,orientation:window.innerWidth>=window.innerHeight?'landscape':'portrait',prototype_only:true};
  statusEl.textContent='Risposta demo registrata localmente: '+JSON.stringify(result);
  saveBtn.disabled=true;
 });
