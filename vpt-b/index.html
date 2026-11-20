@@ -117,12 +117,12 @@ book.position.set(0,0,.772);scene.add(book);
 // Opposite observer marker: simple, non-identifying geometric avatar beyond the far desk edge.
 const avatar = new THREE.Group();
 const body = new THREE.Mesh(new THREE.CapsuleGeometry(.055,.16,4,8),new THREE.MeshStandardMaterial({color:0x3479b9,roughness:.8}));
-body.position.z=.91;avatar.add(body);
+body.rotation.x=Math.PI/2;body.position.z=.91;avatar.add(body);
 const head = new THREE.Mesh(new THREE.SphereGeometry(.052,16,12),new THREE.MeshStandardMaterial({color:0xe4b99c,roughness:.8}));
 head.position.z=1.07;avatar.add(head);
 avatar.position.set(.43,.61,0);scene.add(avatar);
 const markerRing = new THREE.Mesh(new THREE.TorusGeometry(.105,.009,8,32),new THREE.MeshBasicMaterial({color:0x3479b9}));
-markerRing.rotation.x=Math.PI/2;markerRing.position.set(.43,.61,.755);scene.add(markerRing);
+markerRing.position.set(.43,.61,.755);scene.add(markerRing);
 
 const CAMERA_DISTANCE=1.5, CAMERA_HEIGHT=1.25, CAMERA_FOV=40;
 const cameraDefs=[
