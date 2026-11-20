@@ -957,7 +957,7 @@ document.getElementById("profileForm").addEventListener("submit", function(e) {
 });
 
 
-document.getElementById("startTask").addEventListener("click", function() {
+document.getElementById("startTask").addEventListener("click", async function() {
 
   // Recupera la sequenza assegnata dal server.
   let taskOrder = [];
@@ -995,15 +995,31 @@ document.getElementById("startTask").addEventListener("click", function() {
   }
 
   // Memorizza la sequenza e prepara il primo compito.
+  
+  // Attende il salvataggio del profilo sul server.
+  const startButton = document.getElementById("startTask");
+  const originalButtonText = startButton.textContent;
+
+  startButton.disabled = true;
+  startButton.textContent = "SALVATAGGIO PROFILO...";
+
+  try {
+    await cr01InviaProfilo();
+  } catch (error) {
+    alert("Salvataggio non confermato: " + error.message);
+    startButton.disabled = false;
+    startButton.textContent = originalButtonText;
+    return;
+  }
+
+  // Memorizza la sequenza e prepara il primo compito.
   sessionStorage.setItem("CR01_TASK_ORDER", JSON.stringify(taskOrder));
   sessionStorage.setItem("CR01_TASK_INDEX", "0");
 
-  document.getElementById("startTask").disabled = true;
-  document.getElementById("startTask").textContent = "AVVIO IN CORSO...";
+  startButton.textContent = "AVVIO IN CORSO...";
 
   window.location.href = taskPages[taskOrder[0]];
-});
-
+  });
 
 document.getElementById("backToProfile").addEventListener("click", function() {
   document.getElementById("instructionScreen").hidden = true;
@@ -1012,6 +1028,112 @@ document.getElementById("backToProfile").addEventListener("click", function() {
   document.querySelector("h1").textContent = "Participant profile.";
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
+  
+// INVIO DEL PROFILO AL SERVER CR-01
+async function cr01InviaProfilo() {
+
+  const APP_URL = "https://script.google.com/macros/s/AKfycbzSVkpJE_cXYQSiLE0xnKjtUbLsevXeYzcyaKlz1eFjQrkcdpB5xsjT-nq_0sqM3BR-YA/exec";
+
+  const profile = JSON.parse(
+    sessionStorage.getItem("participantProfile") || "{}"
+  );
+
+  if (!participant || !Object.keys(profile).length) {
+    throw new Error("Profilo del partecipante non disponibile.");
+  }
+
+  const submissionId = "PROFILE_" + participant;
+
+  const payload = {
+    submission_id: submissionId,
+    participant_id: participant,
+    profile: profile
+  };
+
+  // Crea un canale nascosto per inviare i dati.
+  const frame = document.createElement("iframe");
+  frame.name = "cr01UploadFrame";
+  frame.hidden = true;
+  document.body.appendChild(frame);
+
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = APP_URL;
+  form.target = frame.name;
+  form.hidden = true;
+
+  const input = document.createElement("input");
+  input.type = "hidden";
+  input.name = "payload";
+  input.value = JSON.stringify(payload);
+
+  form.appendChild(input);
+  document.body.appendChild(form);
+  form.submit();
+  await new Promise(resolve => setTimeout(resolve, 1500));
+
+  // Attende la conferma di registrazione da Google.
+  for (let tentativo = 0; tentativo < 20; tentativo++) {
+
+    
+const confermato = await new Promise(resolve => {
+
+  const callbackName =
+    "cr01VerificaProfilo_" + tentativo + "_" + Date.now();
+
+  const script = document.createElement("script");
+  let concluso = false;
+
+  function termina(esito) {
+    if (concluso) return;
+
+    concluso = true;
+    clearTimeout(timer);
+    delete window[callbackName];
+    script.remove();
+    resolve(esito);
+  }
+
+  window[callbackName] = function(result) {
+    termina(Boolean(result && result.success));
+  };
+
+  script.src =
+    APP_URL +
+    "?action=verificaInvio" +
+    "&submission_id=" + encodeURIComponent(submissionId) +
+    "&callback=" + callbackName +
+    "&t=" + Date.now();
+
+  script.onerror = function() {
+    termina(false);
+  };
+
+  const timer = setTimeout(function() {
+    termina(false);
+  }, 4000);
+
+  document.body.appendChild(script);
+});
+
+
+    if (confermato) {
+      form.remove();
+      frame.remove();
+      return true;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+
+  form.remove();
+  frame.remove();
+
+  throw new Error(
+    "Non è stato possibile confermare il salvataggio del profilo."
+  );
+}
+
 </script>
 
 </body>
