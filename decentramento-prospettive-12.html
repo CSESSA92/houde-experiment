@@ -156,7 +156,7 @@ function setView(trial,onRotationStart){
   render();
   startPanorama(trial,onRotationStart);
 }
-function startPanorama(trial,onStart){const duration=3000,half=70*Math.PI/180,start=performance.now(),direction=trial.direction,baseQuaternion=camera.quaternion.clone(),axis=new THREE.Vector3(0,1,0),yawQuaternion=new THREE.Quaternion();
+function startPanorama(trial,onStart){const duration=5000,half=70*Math.PI/180,start=performance.now(),direction=trial.direction,baseQuaternion=camera.quaternion.clone(),axis=new THREE.Vector3(0,1,0),yawQuaternion=new THREE.Quaternion();
   const fromYaw=direction===1?-half:half,toYaw=-fromYaw,token=++viewAnimation;
   function applyYaw(yaw){yawQuaternion.setFromAxisAngle(axis,yaw);camera.quaternion.copy(yawQuaternion).multiply(baseQuaternion);cameraLookTarget=camera.position.clone().add(new THREE.Vector3(0,0,-10).applyQuaternion(camera.quaternion));render();}
   applyYaw(fromYaw);if(onStart)onStart();
