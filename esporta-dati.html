@@ -49,6 +49,7 @@ document.getElementById("send").addEventListener("click", async ()=>{
  button.textContent="INVIO IN CORSO…";
  message.textContent="Invio in corso. Non chiudere questa pagina.";
  const payload={
+  submission_id:"FINAL_"+participant+"_"+(session||"main"),
   participant_id:participant,
   profile:profile,
   session:{
@@ -60,14 +61,18 @@ document.getElementById("send").addEventListener("click", async ()=>{
    submitted_at:new Date().toISOString(),
    houde_present:!!houde,
    stroop_present:!!stroop,
-   almost_present:!!almost
+   almost_present:!!almost,
+   vpt_present:!!vpt,
+   giudizio_present:!!giudizio
   },
   reasoning:houde&&Array.isArray(houde.results)?houde.results:[],
   stroop:stroop&&Array.isArray(stroop.results)?stroop.results:[],
-  almost:almost||{}
+  vpt:vpt&&Array.isArray(vpt.results)?vpt.results:[],
+  almost:almost||{},
+  giudizio:giudizio&&Array.isArray(giudizio.results)?giudizio.results:[]
  };
  try{
-  await fetch("https://script.google.com/macros/s/AKfycbzSVkpJE_cXYQSiLE0xnKjtUbLsevXeYzcyaKlz1eFjQrkcdpB5xsjT-nq_0sqM3BR-YA/exec",{
+  await fetch("https://script.google.com/macros/s/AKfycbyU_0KhxcYNrwx3skqGeNDjTiDxH6ta9YY72l54EKgL568FiAUKuCGLaT3QdV2gM3Cq/exec",{
    method:"POST",
    mode:"no-cors",
    headers:{"Content-Type":"text/plain;charset=utf-8"},
