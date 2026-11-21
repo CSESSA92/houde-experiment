@@ -29,7 +29,7 @@ const blockOrderAssignedAt=sessionStorage.getItem("taskBlockOrderAssignedAt")||"
 const load=suffix=>{try{return JSON.parse(localStorage.getItem("CR01_"+participant+"_"+session+"_"+suffix)||"null")}catch(e){return null}};
 const houde=participant&&session?load("HOUDE"):null,stroop=participant&&session?load("STROOP"):null,almost=participant&&session?load("ALMOST"):null,vpt=participant&&session?load("VPT"):null,giudizio=participant&&session?load("GIUDIZIO"):null;
 document.getElementById("pid").textContent=participant||"Non disponibile";
-function status(id,ok,label){const e=document.getElementById(id);e.textContent=ok?label:"Non trovato";e.className=ok?"ok":"missing";}
+function status(id,ok,label){const e=document.getElementById(id);e.textContent=label;e.className=ok?"ok":"missing";}
 const validRecord=(r,n)=>!!r&&r.participant_id===participant&&r.session_id===session&&Array.isArray(r.results)&&r.results.length===n;
 const checks={
  houde:validRecord(houde,16),
@@ -45,7 +45,7 @@ status("stroopStatus",checks.stroop,actual.stroop+" / 24 prove");
 status("almostStatus",checks.almost,checks.almost?"Completato":"Incompleto / non trovato");
 status("vptStatus",checks.vpt,actual.vpt+" / 15 prove");
 status("giudizioStatus",checks.giudizio,actual.giudizio+" / 12 situazioni");
-const canExport=!!participant&&!!session&&!!profile&&Object.values(checks).some(Boolean);
+const canExport=!!participant&&!!session&&!!profile&&!!(houde||stroop||almost||vpt||giudizio);
 const canSend=!!participant&&!!session&&!!profile&&Object.values(checks).every(Boolean);
 document.getElementById("export").disabled=!canExport;
 document.getElementById("send").disabled=!canSend;
