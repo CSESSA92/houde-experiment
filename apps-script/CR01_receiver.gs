@@ -133,6 +133,11 @@ function doPost(e) {
 function cr01ReceiverSave_(d) {
   const participant = String(d.participant_id || "").trim();
   if (!participant) throw new Error("ID partecipante mancante.");
+  const participantSheet = cr01ReceiverSheet_("PARTECIPANTI");
+  const participantHeaders = participantSheet.getRange(1,1,1,participantSheet.getLastColumn()).getValues()[0];
+  const participantIdCol = participantHeaders.indexOf("ID_PARTECIPANTE")+1;
+  const knownIds = participantSheet.getLastRow()>1 ? participantSheet.getRange(2,participantIdCol,participantSheet.getLastRow()-1,1).getDisplayValues().flat() : [];
+  if (knownIds.indexOf(participant)<0) throw new Error("ID partecipante non riconosciuto.");
   const submissionId = String(d.submission_id || (d.session && d.session.session_id ? "FINAL_"+participant+"_"+d.session.session_id : "SUB_"+participant));
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
@@ -205,7 +210,7 @@ function cr01ReceiverSaveAlmost_(id,a) {
   const presses=Array.isArray(a.presses)?a.presses:[];
   cr01ReceiverAppendByHeader_("ALMOST_EVENTI",presses.map((r,i)=>({
     ID_PARTECIPANTE:id,ID_SESSIONE:id+"-main",NUMERO_EVENTO:r.event_number||i+1,
-    TEMPO_VIDEO_MS:r.elapsed_ms||"",TIMESTAMP_PRESSIONE:r.wall_time||""
+    TEMPO_VIDEO_MS:Math.round(Number(r.video_time_s||0)*1000),TIMESTAMP_PRESSIONE:r.wall_time||""
   })));
   cr01ReceiverAppendByHeader_("ALMOST_RIEPILOGO",[{
     ID_PARTECIPANTE:id,ID_SESSIONE:id+"-main",DURATA_VIDEO_MS:Math.round(Number(a.video_duration_s||0)*1000),
