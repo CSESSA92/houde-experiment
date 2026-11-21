@@ -26,24 +26,35 @@ const order=sessionStorage.getItem("taskOrder")||"";
 const orderAssignedAt=sessionStorage.getItem("taskOrderAssignedAt")||"";
 const blockOrder=sessionStorage.getItem("taskBlockOrder")||"";
 const blockOrderAssignedAt=sessionStorage.getItem("taskBlockOrderAssignedAt")||"";
-const load=suffix=>{try{return JSON.parse(localStorage.getItem("CR01_"+participant+"_"+suffix)||"null")}catch(e){return null}};
-const houde=participant?load("HOUDE"):null,stroop=participant?load("STROOP"):null,almost=participant?load("ALMOST"):null,vpt=participant?load("VPT"):null,giudizio=participant?load("GIUDIZIO"):null;
+const load=suffix=>{try{return JSON.parse(localStorage.getItem("CR01_"+participant+"_"+session+"_"+suffix)||"null")}catch(e){return null}};
+const houde=participant&&session?load("HOUDE"):null,stroop=participant&&session?load("STROOP"):null,almost=participant&&session?load("ALMOST"):null,vpt=participant&&session?load("VPT"):null,giudizio=participant&&session?load("GIUDIZIO"):null;
 document.getElementById("pid").textContent=participant||"Non disponibile";
 function status(id,ok,label){const e=document.getElementById(id);e.textContent=ok?label:"Non trovato";e.className=ok?"ok":"missing";}
-status("profileStatus",!!profile, "Disponibile");
-status("houdeStatus",!!houde&&Array.isArray(houde.results),houde&&houde.results?houde.results.length+" prove":"Disponibile");
-status("stroopStatus",!!stroop&&Array.isArray(stroop.results),stroop&&stroop.results?stroop.results.length+" prove":"Disponibile");
-status("almostStatus",!!almost,almost?"Completato":"Disponibile");
-status("vptStatus",!!vpt&&Array.isArray(vpt.results),vpt&&vpt.results?vpt.results.length+" prove":"Non trovato");
-status("giudizioStatus",!!giudizio&&Array.isArray(giudizio.results),giudizio&&giudizio.results?giudizio.results.length+" situazioni":"Non trovato");
-const canExport=!!participant&&!!profile&&(!!houde||!!stroop||!!almost||!!vpt||!!giudizio);
+const validRecord=(r,n)=>!!r&&r.participant_id===participant&&r.session_id===session&&Array.isArray(r.results)&&r.results.length===n;
+const checks={
+ houde:validRecord(houde,16),
+ stroop:validRecord(stroop,24),
+ almost:!!almost&&almost.participant_id===participant&&almost.session_id===session&&!!almost.completed_at&&Number(almost.video_duration_s)>0&&Array.isArray(almost.presses)&&almost.press_count===almost.presses.length,
+ vpt:validRecord(vpt,15),
+ giudizio:validRecord(giudizio,12)
+};
+const actual={houde:houde&&Array.isArray(houde.results)?houde.results.length:0,stroop:stroop&&Array.isArray(stroop.results)?stroop.results.length:0,almost:almost&&Array.isArray(almost.presses)?("completato · "+almost.presses.length+" rilevazioni"):"—",vpt:vpt&&Array.isArray(vpt.results)?vpt.results.length:0,giudizio:giudizio&&Array.isArray(giudizio.results)?giudizio.results.length:0};
+status("profileStatus",!!profile&&profile.session===session,"Disponibile");
+status("houdeStatus",checks.houde,actual.houde+" / 16 prove");
+status("stroopStatus",checks.stroop,actual.stroop+" / 24 prove");
+status("almostStatus",checks.almost,checks.almost?"Completato":"Incompleto / non trovato");
+status("vptStatus",checks.vpt,actual.vpt+" / 15 prove");
+status("giudizioStatus",checks.giudizio,actual.giudizio+" / 12 situazioni");
+const canExport=!!participant&&!!session&&!!profile&&Object.values(checks).some(Boolean);
+const canSend=!!participant&&!!session&&!!profile&&Object.values(checks).every(Boolean);
 document.getElementById("export").disabled=!canExport;
-document.getElementById("send").disabled=!canExport;
+document.getElementById("send").disabled=!canSend;
+if(!canSend)document.getElementById("message").textContent="Esportazione Excel disponibile quando è presente almeno un compito della sessione corrente. L'invio all'archivio è abilitato soltanto quando tutti e cinque i compiti risultano completi e coerenti con questa sessione.";
 
 document.getElementById("send").addEventListener("click", async ()=>{
  const button=document.getElementById("send");
  const message=document.getElementById("message");
- if(!canExport)return;
+ if(!canSend){message.textContent="Invio bloccato: uno o più compiti sono assenti, incompleti o non appartengono a questa sessione. Puoi comunque scaricare il file Excel per controllare i dati disponibili.";return;}
  if(!confirm("Inviare i dati di questa sessione all'archivio Google Sheets istituzionale?"))return;
  button.disabled=true;
  button.textContent="INVIO IN CORSO…";
@@ -59,11 +70,11 @@ document.getElementById("send").addEventListener("click", async ()=>{
    task_block_order:blockOrder,
    task_block_order_assigned_at:blockOrderAssignedAt,
    submitted_at:new Date().toISOString(),
-   houde_present:!!houde,
-   stroop_present:!!stroop,
-   almost_present:!!almost,
-   vpt_present:!!vpt,
-   giudizio_present:!!giudizio
+   houde_present:checks.houde,
+   stroop_present:checks.stroop,
+   almost_present:checks.almost,
+   vpt_present:checks.vpt,
+   giudizio_present:checks.giudizio
   },
   reasoning:houde&&Array.isArray(houde.results)?houde.results:[],
   stroop:stroop&&Array.isArray(stroop.results)?stroop.results:[],
@@ -92,9 +103,11 @@ document.getElementById("send").addEventListener("click", async ()=>{
 document.getElementById("export").addEventListener("click",()=>{
  if(typeof XLSX==="undefined"){document.getElementById("message").textContent="Libreria Excel non disponibile. Verifica la connessione a Internet e ricarica la pagina.";return;}
  const wb=XLSX.utils.book_new();
+ const integrityRows=[["Compito","Atteso","Rilevato","Valido"],["HOUDE",16,actual.houde,checks.houde],["STROOP",24,actual.stroop,checks.stroop],["ALMOST","1 video completato",actual.almost,checks.almost],["VPT",15,actual.vpt,checks.vpt],["GIUDIZIO",12,actual.giudizio,checks.giudizio],["SESSIONE",session,session,!!session]];
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(integrityRows),"Controllo_qualita");
  const profileRows=Object.entries(profile||{}).map(([campo,valore])=>({campo,valore:Array.isArray(valore)?valore.join("; "):(typeof valore==="object"&&valore!==null?JSON.stringify(valore):valore)}));
  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(profileRows.length?profileRows:[{informazione:"Profilo non disponibile"}]),"Profilo");
- const sessionRows=[{participant_id:participant,session,task_order_assigned:order,task_order_assigned_at:orderAssignedAt,task_block_order:blockOrder,task_block_order_assigned_at:blockOrderAssignedAt,exported_at:new Date().toISOString(),houde_present:!!houde,stroop_present:!!stroop,almost_present:!!almost,vpt_present:!!vpt,giudizio_present:!!giudizio}];
+ const sessionRows=[{participant_id:participant,session,task_order_assigned:order,task_order_assigned_at:orderAssignedAt,task_block_order:blockOrder,task_block_order_assigned_at:blockOrderAssignedAt,exported_at:new Date().toISOString(),houde_present:checks.houde,stroop_present:checks.stroop,almost_present:checks.almost,vpt_present:checks.vpt,giudizio_present:checks.giudizio}];
  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sessionRows),"Sessione");
  const addRows=(name,rows)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows&&rows.length?rows:[{informazione:"Nessun dato registrato"}]),name);
  addRows("Sillogismi",houde&&houde.results);
@@ -105,7 +118,8 @@ document.getElementById("export").addEventListener("click",()=>{
  addRows("Almost_eventi",almost&&almost.presses);
  addRows("Almost_riepilogo",almostMeta?[almostMeta]:null);
  const safe=participant.replace(/[^a-zA-Z0-9_-]/g,"_");
- XLSX.writeFile(wb,"CR01_"+safe+"_RISULTATI.xlsx");
+ const safeSession=session.replace(/[^a-zA-Z0-9_-]/g,"_");
+ XLSX.writeFile(wb,"CR01_"+safe+"_"+safeSession+"_RISULTATI.xlsx");
  document.getElementById("message").textContent="File Excel generato. Controlla che contenga tutti i fogli attesi e conserva una copia sicura.";
 });
 </script></body></html>
