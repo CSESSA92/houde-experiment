@@ -39,7 +39,133 @@ function show(){responding=false;const t=ordered[index];document.getElementById(
 function answer(response){if(finished||responding||document.getElementById("task").classList.contains("hidden"))return;responding=true;const t=ordered[index];results.push({participant_id:participant,task:"houde_inspired_syllogistic_reasoning",task_order:sessionStorage.getItem("taskOrder")||"",task_block_order:sessionStorage.getItem("taskBlockOrder")||"",item_id:t.id,presentation_order:index+1,logical_validity:t.logic,conclusion_believability:t.belief,premise_1:t.p1,premise_2:t.p2,conclusion:t.c,response:response,response_correct:response===t.valid?1:0,response_time_ms:Math.round(performance.now()-onset),device_type:device,completed_at:new Date().toISOString()});index++;if(index<16)show();else finish();}
 document.getElementById("begin").addEventListener("click",()=>{document.getElementById("instructions").classList.add("hidden");document.getElementById("task").classList.remove("hidden");show();});
 document.getElementById("yes").addEventListener("click",()=>answer(1));document.getElementById("no").addEventListener("click",()=>answer(0));
-function finish(){finished=true;document.getElementById("task").classList.add("hidden");document.getElementById("complete").classList.remove("hidden");document.getElementById("progressBar").style.width="100%";const score=results.reduce((s,r)=>s+r.response_correct,0);document.getElementById("summary").textContent="Prove completate: "+results.length+" su 16 · Risposte logicamente corrette: "+score+"/16. Adattamento esplorativo ispirato al paradigma del belief bias; non è una prova standardizzata.";localStorage.setItem("CR01_"+participant+"_HOUDE",JSON.stringify({participant_id:participant,profile,task:"houde_inspired_syllogistic_reasoning",results}));}
+async function finish() {
+  finished = true;
+
+  document.getElementById("task").classList.add("hidden");
+  document.getElementById("complete").classList.remove("hidden");
+  document.getElementById("progressBar").style.width = "100%";
+
+  const score = results.reduce((s, r) => s + r.response_correct, 0);
+
+  document.getElementById("summary").textContent =
+    "Prove completate: " + results.length +
+    " su 16 · Risposte logicamente corrette: " + score + "/16.";
+
+  // Mantiene una copia locale dei risultati.
+  localStorage.setItem(
+    "CR01_" + participant + "_HOUDE",
+    JSON.stringify({
+      participant_id: participant,
+      profile,
+      task: "houde_inspired_syllogistic_reasoning",
+      results
+    })
+  );
+
+  const status = document.getElementById("saveStatus");
+  const continueButton = document.getElementById("continue");
+
+  continueButton.disabled = true;
+  status.textContent = "Salvataggio dei risultati sul server in corso...";
+
+  const APP_URL = "https://script.google.com/macros/s/AKfycbzSVkpJE_cXYQSiLE0xnKjtUbLsevXeYzcyaKlz1eFjQrkcdpB5xsjT-nq_0sqM3BR-YA/exec";
+
+  const submissionId = "HOUDE_" + participant;
+
+  const payload = {
+    submission_id: submissionId,
+    participant_id: participant,
+    reasoning: results
+  };
+
+  const frame = document.createElement("iframe");
+  frame.name = "cr01HoudeUpload";
+  frame.hidden = true;
+  document.body.appendChild(frame);
+
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = APP_URL;
+  form.target = frame.name;
+  form.hidden = true;
+
+  const input = document.createElement("input");
+  input.type = "hidden";
+  input.name = "payload";
+  input.value = JSON.stringify(payload);
+
+  form.appendChild(input);
+  document.body.appendChild(form);
+  form.submit();
+
+  await new Promise(resolve => setTimeout(resolve, 1500));
+
+  try {
+    for (let tentativo = 0; tentativo < 20; tentativo++) {
+
+      const confermato = await new Promise(resolve => {
+
+        const callbackName =
+          "cr01VerificaHoude_" + tentativo + "_" + Date.now();
+
+        const script = document.createElement("script");
+        let concluso = false;
+
+        function termina(esito) {
+          if (concluso) return;
+          concluso = true;
+          clearTimeout(timer);
+          delete window[callbackName];
+          script.remove();
+          resolve(esito);
+        }
+
+        window[callbackName] = function(result) {
+          termina(Boolean(result && result.success));
+        };
+
+        script.src =
+          APP_URL +
+          "?action=verificaInvio" +
+          "&submission_id=" + encodeURIComponent(submissionId) +
+          "&callback=" + callbackName +
+          "&t=" + Date.now();
+
+        script.onerror = function() {
+          termina(false);
+        };
+
+        const timer = setTimeout(() => termina(false), 4000);
+
+        document.body.appendChild(script);
+      });
+
+      if (confermato) {
+        status.textContent =
+          "Risultati registrati correttamente sul server.";
+
+        continueButton.disabled = false;
+        form.remove();
+        frame.remove();
+        return;
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    throw new Error("Conferma del server non ricevuta.");
+
+  } catch (error) {
+
+    status.textContent =
+      "ATTENZIONE: salvataggio sul server non confermato. Non proseguire.";
+
+    console.error(error);
+    form.remove();
+    frame.remove();
+  }
+}
 document.getElementById("download").addEventListener("click",()=>{const cols=Object.keys(results[0]||{}),q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',csv=[cols.map(q).join(","),...results.map(r=>cols.map(k=>q(r[k])).join(","))].join("\r\n"),blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="CR01_"+participant+"_SILLOGISMI.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);});
 document.getElementById("continue").addEventListener("click",()=>{const co=sessionStorage.getItem("taskOrder")||"houde_first",bo=sessionStorage.getItem("taskBlockOrder")||"inhibition_first";if(co==="houde_first")location.href="compito-stroop.html";else location.href=bo==="inhibition_first"?"almost.html":"esporta-dati.html";});
 </script></body></html>
