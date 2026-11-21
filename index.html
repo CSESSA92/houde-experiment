@@ -362,13 +362,15 @@ startButton.addEventListener("click", async () => {
 
     const participant = result.participant_id;
     const session = "main";
-    const tasks = result.tasks;
+    const baseTasks = result.tasks;
 
-    if (!participant || !Array.isArray(tasks) || tasks.length !== 4) {
-      throw new Error(
-        "Il server non ha restituito tutti i dati necessari."
-      );
+    if (!participant || !Array.isArray(baseTasks) || baseTasks.length !== 4 ||
+        !baseTasks.every(task => ["ALMOST","HOUDE","STROOP","VPT"].includes(task)) ||
+        new Set(baseTasks).size !== 4) {
+      throw new Error("Il server non ha restituito una sequenza valida dei quattro compiti principali.");
     }
+    // GIUDIZIO è sempre collocato al termine della sequenza.
+    const tasks = [...baseTasks, "GIUDIZIO"];
 
     // Memorizzazione persistente sul dispositivo
     localStorage.setItem("participant", participant);
