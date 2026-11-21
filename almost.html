@@ -46,7 +46,7 @@ button{min-height:44px;touch-action:manipulation}
 <section class="panel hidden" id="playerPanel">
 <div class="panel-title">VIDEO STIMULUS / ALMOST</div>
 <div class="video-shell"><div id="player"></div><div class="video-cover" id="videoCover">Preparazione del filmato…</div></div>
-<div class="monitor"><span id="playState">IN ATTESA DELLA RIPRODUZIONE</span><span id="elapsed">00:00</span></div>
+<div class="monitor"><span id="playState">IN ATTESA DELLA RIPRODUZIONE</span><span id="elapsed">00:00</span></div><div class="counter" aria-live="polite">EVENTI RILEVATI: <strong id="eventCount">0</strong></div>
 <div class="press-area"><button class="press-button" id="mentalize" disabled>HO FORMULATO UN'INTERPRETAZIONE</button><div class="feedback" id="feedback" aria-live="polite"></div></div>
 </section>
 <section class="panel hidden" id="complete">
@@ -109,6 +109,7 @@ document.getElementById("mentalize").addEventListener("click",()=>{
  void button.offsetWidth;
  button.classList.add("flash");
  setTimeout(()=>button.classList.remove("flash"),220);
+ document.getElementById("eventCount").textContent=String(presses.length);
  document.getElementById("feedback").textContent="Rilevazione registrata.";
 });
 function finish(){
@@ -118,7 +119,7 @@ function finish(){
  const duration=player&&player.getDuration?player.getDuration():0;
  const record={participant_id:participant,session_id:sessionId,profile,task:"almost_mentalization_self_detection",video_id:VIDEO_ID,task_order:order,video_started_at:startWall,video_duration_s:duration,press_count:presses.length,presses,pause_attempts:pauseAttempts,seek_anomalies:seekAnomalies,completed_at:new Date().toISOString(),delivery:"youtube_iframe_best_effort"};
  localStorage.setItem("CR01_"+participant+"_"+sessionId+"_ALMOST",JSON.stringify(record));
- document.getElementById("summary").textContent="Durata del filmato: "+formatTime(duration)+". La prova è stata completata.";
+ document.getElementById("summary").textContent="Durata del filmato: "+formatTime(duration)+". Eventi rilevati: "+presses.length+". La prova è stata completata.";
 }
 document.getElementById("download").addEventListener("click",()=>{
  const header=["participant_id","task","video_id","task_order","event_number","elapsed_ms","video_time_s","wall_time","pause_attempts","seek_anomalies"];
