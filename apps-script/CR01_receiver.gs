@@ -179,9 +179,20 @@ function cr01ReceiverSaveProfile_(id,p) {
   sh.getRange(rowNum,1,1,headers.length).setValues([row]);
 }
 function cr01ReceiverSaveSession_(id,s) {
-  const sh=cr01ReceiverSheet_("SESSIONI"),sid=String(s.session_id||id+"-main");
+  const sh=cr01ReceiverSheet_("SESSIONI");
+  // Usa lo stesso ID creato all'avvio e aggiorna la riga esistente:
+  // una sola registrazione per partecipante e sessione.
+  const sid=String(id+"-"+(s.session_id||"main"));
   const vals=[sid,id,s.started_at||"",s.submitted_at||new Date(),"COMPLETATA",JSON.stringify({task_order:s.task_order||"",task_order_assigned_at:s.task_order_assigned_at||"",task_block_order:s.task_block_order||"",task_block_order_assigned_at:s.task_block_order_assigned_at||""})];
-  sh.appendRow(vals);
+  const last=sh.getLastRow();
+  let rowNum=0;
+  if(last>1) {
+    const ids=sh.getRange(2,1,last-1,1).getDisplayValues().flat();
+    const index=ids.indexOf(sid);
+    if(index>=0) rowNum=index+2;
+  }
+  if(rowNum) sh.getRange(rowNum,1,1,vals.length).setValues([vals]);
+  else sh.appendRow(vals);
 }
 function cr01ReceiverSaveHoude_(id,rows) {
   cr01ReceiverAppendByHeader_("HOUDE_PROVE",rows.map((r,i)=>({
