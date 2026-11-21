@@ -382,6 +382,9 @@ startButton.addEventListener("click", async () => {
     sessionStorage.setItem("participant", participant);
     sessionStorage.setItem("session", session);
     sessionStorage.setItem("taskOrder", JSON.stringify(tasks));
+    // Chiavi lette dal gestore della sequenza dei cinque compiti
+    sessionStorage.setItem("CR01_TASK_ORDER", JSON.stringify(tasks));
+    sessionStorage.setItem("CR01_TASK_INDEX", "0");
     sessionStorage.setItem("sequence", result.sequence || "");
 
     statusText.textContent = "SESSION INITIALIZED";
