@@ -82,22 +82,36 @@ document.getElementById("send").addEventListener("click", async ()=>{
   almost:almost||{},
   giudizio:giudizio&&Array.isArray(giudizio.results)?giudizio.results:[]
  };
+ const APP_URL="https://script.google.com/macros/s/AKfycbyU_0KhxcYNrwx3skqGeNDjTiDxH6ta9YY72l54EKgL568FiAUKuCGLaT3QdV2gM3Cq/exec";
+ let frame=null,form=null;
  try{
-  await fetch("https://script.google.com/macros/s/AKfycbyU_0KhxcYNrwx3skqGeNDjTiDxH6ta9YY72l54EKgL568FiAUKuCGLaT3QdV2gM3Cq/exec",{
-   method:"POST",
-   mode:"no-cors",
-   headers:{"Content-Type":"text/plain;charset=utf-8"},
-   body:JSON.stringify(payload)
-  });
-  message.textContent="Richiesta di invio trasmessa dal browser. Per sicurezza, verifica che il codice partecipante e le righe dei compiti compaiano nei fogli Google Sheets. Il browser non consente a questa pagina di leggere la conferma del server.";
-  button.textContent="RICHIESTA INVIATA";
+  frame=document.createElement("iframe");frame.name="cr01FinalUploadFrame";frame.hidden=true;document.body.appendChild(frame);
+  form=document.createElement("form");form.method="POST";form.action=APP_URL;form.target=frame.name;form.hidden=true;
+  const input=document.createElement("input");input.type="hidden";input.name="payload";input.value=JSON.stringify(payload);form.appendChild(input);document.body.appendChild(form);form.submit();
+  message.textContent="Dati trasmessi. Attendo la conferma di registrazione dell'archivio…";
+  let confirmed=false;
+  for(let attempt=0;attempt<20&&!confirmed;attempt++){
+   confirmed=await new Promise(resolve=>{
+    const callbackName="cr01VerificaInvioFinale_"+attempt+"_"+Date.now();
+    const script=document.createElement("script");let settled=false;
+    const finish=result=>{if(settled)return;settled=true;clearTimeout(timer);delete window[callbackName];script.remove();resolve(result);};
+    window[callbackName]=result=>finish(Boolean(result&&result.success));
+    script.src=APP_URL+"?action=verificaInvio&submission_id="+encodeURIComponent(payload.submission_id)+"&callback="+callbackName+"&t="+Date.now();
+    script.onerror=()=>finish(false);
+    const timer=setTimeout(()=>finish(false),4000);
+    document.body.appendChild(script);
+   });
+   if(!confirmed&&attempt<19)await new Promise(resolve=>setTimeout(resolve,1000));
+  }
+  if(!confirmed)throw new Error("il server non ha restituito la conferma entro il tempo previsto");
+  message.textContent="Archivio: ricezione confermata dal server per la sessione "+session+". Conserva comunque il file Excel come copia di sicurezza.";
+  button.textContent="DATI REGISTRATI ✓";
   document.getElementById("feedback").style.display="block";
   document.getElementById("feedback").addEventListener("click",()=>{window.location.href="restituzione.html";},{once:true});
  }catch(error){
-  message.textContent="Invio non riuscito: "+error.message+". I dati sono ancora disponibili in questo browser: genera il file Excel come copia di sicurezza.";
-  button.disabled=false;
-  button.textContent="RIPROVA INVIO →";
- }
+  message.textContent="Conferma non ricevuta: "+error.message+". Non considerare concluso l'invio. I dati restano nel browser; scarica il file Excel e riprova più tardi.";
+  button.disabled=false;button.textContent="RIPROVA INVIO →";
+ }finally{if(form)form.remove();if(frame)frame.remove();}
 });
 
 document.getElementById("export").addEventListener("click",()=>{
