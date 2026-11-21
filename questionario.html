@@ -1044,7 +1044,7 @@ async function cr01InviaProfilo() {
     throw new Error("Profilo del partecipante non disponibile.");
   }
 
-  const submissionId = "PROFILE_" + participant;
+  const submissionId = "PROFILE_" + participant + "_" + session;
 
   const payload = {
     submission_id: submissionId,
