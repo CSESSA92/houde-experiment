@@ -104,7 +104,7 @@ function choose(correct){
  [...choices.querySelectorAll("button")].forEach(b=>b.disabled=true);
 }
 next.addEventListener("click",()=>{if(!answered)return;if(current<scenarios.length-1){current++;render();document.getElementById("exercise").scrollIntoView({behavior:"smooth",block:"start"});}else{document.getElementById("exercise").style.display="none";document.getElementById("conclusion").classList.add("show");document.getElementById("conclusion").scrollIntoView({behavior:"smooth",block:"start"});}});
-document.getElementById("restart").addEventListener("click",()=>{current=0;document.getElementById("conclusion").classList.remove("show");document.getElementById("exercise").style.display="block";render();document.getElementById("exercise").scrollIntoView({behavior:"smooth",block:"start"});});
+
 render();
 </script>
 </body>
