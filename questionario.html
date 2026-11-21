@@ -974,7 +974,8 @@ document.getElementById("startTask").addEventListener("click", async function() 
     ALMOST: "almost.html",
     HOUDE: "compito-houde.html",
     STROOP: "compito-stroop.html",
-    VPT: "decentramento-prospettive-12.html"
+    VPT: "decentramento-prospettive-12.html",
+    GIUDIZIO: "giudizio.html"
   };
 
   // Verifica che partecipante, sessione e sequenza siano disponibili.
@@ -985,9 +986,10 @@ document.getElementById("startTask").addEventListener("click", async function() 
   }
 
   if (
-    taskOrder.length !== 4 ||
-    !taskOrder.every(task => Object.prototype.hasOwnProperty.call(taskPages, task)) ||
-    new Set(taskOrder).size !== 4
+    taskOrder.length !== 5 ||
+    taskOrder[4] !== "GIUDIZIO" ||
+    !taskOrder.slice(0,4).every(task => ["ALMOST","HOUDE","STROOP","VPT"].includes(task)) ||
+    new Set(taskOrder.slice(0,4)).size !== 4
   ) {
     alert("Sequenza dei compiti non valida. Torna alla pagina iniziale.");
     window.location.href = "index.html";
