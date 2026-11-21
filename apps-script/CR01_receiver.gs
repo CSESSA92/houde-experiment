@@ -183,7 +183,6 @@ function cr01ReceiverSaveSession_(id,s) {
   // Usa lo stesso ID creato all'avvio e aggiorna la riga esistente:
   // una sola registrazione per partecipante e sessione.
   const sid=String(id+"-"+(s.session_id||"main"));
-  const vals=[sid,id,s.started_at||"",s.submitted_at||new Date(),"COMPLETATA",JSON.stringify({task_order:s.task_order||"",task_order_assigned_at:s.task_order_assigned_at||"",task_block_order:s.task_block_order||"",task_block_order_assigned_at:s.task_block_order_assigned_at||""})];
   const last=sh.getLastRow();
   let rowNum=0;
   if(last>1) {
@@ -191,6 +190,10 @@ function cr01ReceiverSaveSession_(id,s) {
     const index=ids.indexOf(sid);
     if(index>=0) rowNum=index+2;
   }
+  // Se l’avvio non viene reinviato nel payload finale, conserva la data
+  // registrata quando il partecipante è stato creato.
+  const existingStart=rowNum ? sh.getRange(rowNum,3).getValue() : "";
+  const vals=[sid,id,s.started_at||existingStart,s.submitted_at||new Date(),"COMPLETATA",JSON.stringify({task_order:s.task_order||"",task_order_assigned_at:s.task_order_assigned_at||"",task_block_order:s.task_block_order||"",task_block_order_assigned_at:s.task_block_order_assigned_at||""})];
   if(rowNum) sh.getRange(rowNum,1,1,vals.length).setValues([vals]);
   else sh.appendRow(vals);
 }
