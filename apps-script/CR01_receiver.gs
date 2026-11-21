@@ -237,3 +237,10 @@ function cr01ReceiverVerify_(p) {
   const vals=sh && sh.getLastRow()>1?sh.getRange(2,1,sh.getLastRow()-1,1).getDisplayValues().flat():[];
   return cr01ReceiverJson_({success:vals.indexOf(submission)>=0},callback);
 }
+
+
+/** Eseguire una volta dall'editor per integrare le intestazioni del nuovo archivio. */
+function preparaRicevitoreCR01() {
+  cr01ReceiverEnsureSchema_();
+  Logger.log('Ricevitore CR-01 pronto: intestazioni verificate senza cancellare dati.');
+}
