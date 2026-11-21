@@ -191,7 +191,7 @@ function cr01ReceiverSaveHoude_(id,rows) {
     TEMPO_RISPOSTA_MS:r.response_time_ms||"",TIMESTAMP:r.completed_at||""
   })));
 }
-function cr01ReceiverSaveStroop_(rows,id) {
+function cr01ReceiverSaveStroop_(id,rows) {
   cr01ReceiverAppendByHeader_("STROOP_PROVE",rows.map((r,i)=>({
     ID_PARTECIPANTE:id,ID_SESSIONE:id+"-main",NUMERO_PROVA:r.trial||r.presentation_order||i+1,
     CONDIZIONE:r.condition||r.congruency||"",STIMOLO:r.stimulus||r.word||"",
