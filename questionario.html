@@ -635,11 +635,11 @@ button{min-height:44px;touch-action:manipulation}
     </div>
     <p class="subtitle">
       Il profilo è stato registrato temporaneamente in questa sessione.
-      Puoi proseguire con il compito di ragionamento condizionale.
+      Puoi proseguire con la sequenza dei cinque compiti sperimentali.
     </p>
     <div class="notice">
       <strong>NOTA SULLA RACCOLTA</strong><br>
-      Questa versione è un prototipo. I risultati del compito vengono salvati sul dispositivo e scaricati in formato CSV al termine. Non sono trasmessi automaticamente a un archivio centrale.
+      I risultati dei cinque compiti vengono conservati temporaneamente sul dispositivo e inviati all'archivio centrale al termine della sessione, dopo la conferma dell'invio.
     </div>
     <p class="help" id="profileSummary"></p>
     <button type="button" id="startTask">AVVIA COMPITO DI RAGIONAMENTO →</button>
@@ -963,9 +963,14 @@ document.getElementById("startTask").addEventListener("click", async function() 
   let taskOrder = [];
 
   try {
-    taskOrder = JSON.parse(
-      sessionStorage.getItem("taskOrder") || "[]"
-    );
+    // Recupera la sequenza dalla sessione; usa le copie di sicurezza
+    // se il browser non conserva la chiave sessionStorage originale.
+    const savedOrder =
+      sessionStorage.getItem("taskOrder") ||
+      sessionStorage.getItem("CR01_TASK_ORDER") ||
+      localStorage.getItem("CR01_TASK_ORDER") ||
+      "[]";
+    taskOrder = JSON.parse(savedOrder);
   } catch (error) {
     taskOrder = [];
   }
