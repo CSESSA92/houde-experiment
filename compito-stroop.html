@@ -87,6 +87,7 @@ button{min-height:44px;touch-action:manipulation}
 </section>
 </main>
 <footer><span>CR—01 / COGNITIVE RESEARCH</span><span>COMPITO COLORE-PAROLA · VERSIONE DIGITALE SPERIMENTALE</span></footer>
+<script src="sequenza-compiti.js"></script>
 <script>
 const participant=sessionStorage.getItem("participant")||"";
 const profile=JSON.parse(sessionStorage.getItem("participantProfile")||"null");
@@ -182,15 +183,7 @@ document.getElementById("download").addEventListener("click",()=>{
  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");
  a.href=url;a.download="CR01_"+participant+"_STROOP.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 });
-document.getElementById("continue").addEventListener("click",()=>{
-  const cognitiveOrder=sessionStorage.getItem("taskOrder")||"houde_first";
-  const blockOrder=sessionStorage.getItem("taskBlockOrder")||"inhibition_first";
-  if(cognitiveOrder==="stroop_first"){
-    window.location.href="compito-houde.html";
-  }else{
-    window.location.href=blockOrder==="inhibition_first"?"almost.html":"esporta-dati.html";
-  }
-});
+document.getElementById("continue").addEventListener("click",()=>window.cr01AdvanceTask("STROOP"));
 </script>
 </body>
 </html>
