@@ -15,8 +15,8 @@ button{min-height:44px;touch-action:manipulation}
 @media(forced-colors:active){button,.card,input,select,textarea{forced-color-adjust:auto;border:1px solid ButtonText}}
 
 </style></head><body>
-<a class="skip-link" href="#main-content">Salta al contenuto principale</a><header>◇ &nbsp; COGNITIVE RESEARCH SYSTEM / CR—01</header><main id="main-content" tabindex="-1"><div class="overline">DATA MANAGEMENT / EXPORT</div><h1>Esportazione dei risultati.</h1><p class="lead">Verifica i dati presenti in questo browser e crea un unico file Excel (.xlsx) con fogli separati per profilo, ragionamento sillogistico, Stroop e autorilevazione durante il filmato.</p>
-<section class="panel"><div class="status"><span>Codice partecipante</span><strong id="pid">—</strong></div><div class="status"><span>Profilo</span><strong id="profileStatus">—</strong></div><div class="status"><span>Ragionamento sillogistico</span><strong id="houdeStatus">—</strong></div><div class="status"><span>Stroop digitale</span><strong id="stroopStatus">—</strong></div><div class="status"><span>Almost</span><strong id="almostStatus">—</strong></div><button id="export" disabled>GENERA FILE EXCEL (.XLSX) ↓</button><button id="send" disabled>INVIA I DATI ALL'ARCHIVIO UNISA →</button><div class="notice" id="message">I dati sono letti dalla memoria locale del browser. Puoi conservarne una copia Excel e inviare una copia all'archivio istituzionale. L'esito dell'invio dovrà essere verificato nel foglio Google Sheets.</div><button id="feedback" style="display:none" type="button">CONTINUA ALLA RESTITUZIONE FORMATIVA →</button></section></main><footer>CR—01 / ESPORTAZIONE LOCALE · DATI NON TRASMESSI AUTOMATICAMENTE</footer>
+<a class="skip-link" href="#main-content">Salta al contenuto principale</a><header>◇ &nbsp; COGNITIVE RESEARCH SYSTEM / CR—01</header><main id="main-content" tabindex="-1"><div class="overline">DATA MANAGEMENT / EXPORT</div><h1>Esportazione dei risultati.</h1><p class="lead">Verifica i dati presenti in questo browser e crea un file Excel (.xlsx) con fogli separati per profilo, ciascun compito e sessione.</p>
+<section class="panel"><div class="status"><span>Codice partecipante</span><strong id="pid">—</strong></div><div class="status"><span>Profilo</span><strong id="profileStatus">—</strong></div><div class="status"><span>Ragionamento sillogistico</span><strong id="houdeStatus">—</strong></div><div class="status"><span>Stroop digitale</span><strong id="stroopStatus">—</strong></div><div class="status"><span>Almost</span><strong id="almostStatus">—</strong></div><div class="status"><span>VPT</span><strong id="vptStatus">—</strong></div><div class="status"><span>Giudizio</span><strong id="giudizioStatus">—</strong></div><button id="export" disabled>GENERA FILE EXCEL (.XLSX) ↓</button><button id="send" disabled>INVIA I DATI ALL'ARCHIVIO UNISA →</button><div class="notice" id="message">I dati sono letti dalla memoria locale del browser. Puoi conservarne una copia Excel e inviare una copia all'archivio istituzionale. L'esito dell'invio dovrà essere verificato nel foglio Google Sheets.</div><button id="feedback" style="display:none" type="button">CONTINUA ALLA RESTITUZIONE FORMATIVA →</button></section></main><footer>CR—01 / ESPORTAZIONE LOCALE · DATI NON TRASMESSI AUTOMATICAMENTE</footer>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 const participant=sessionStorage.getItem("participant")||"";
@@ -27,14 +27,16 @@ const orderAssignedAt=sessionStorage.getItem("taskOrderAssignedAt")||"";
 const blockOrder=sessionStorage.getItem("taskBlockOrder")||"";
 const blockOrderAssignedAt=sessionStorage.getItem("taskBlockOrderAssignedAt")||"";
 const load=suffix=>{try{return JSON.parse(localStorage.getItem("CR01_"+participant+"_"+suffix)||"null")}catch(e){return null}};
-const houde=participant?load("HOUDE"):null,stroop=participant?load("STROOP"):null,almost=participant?load("ALMOST"):null;
+const houde=participant?load("HOUDE"):null,stroop=participant?load("STROOP"):null,almost=participant?load("ALMOST"):null,vpt=participant?load("VPT"):null,giudizio=participant?load("GIUDIZIO"):null;
 document.getElementById("pid").textContent=participant||"Non disponibile";
 function status(id,ok,label){const e=document.getElementById(id);e.textContent=ok?label:"Non trovato";e.className=ok?"ok":"missing";}
 status("profileStatus",!!profile, "Disponibile");
 status("houdeStatus",!!houde&&Array.isArray(houde.results),houde&&houde.results?houde.results.length+" prove":"Disponibile");
 status("stroopStatus",!!stroop&&Array.isArray(stroop.results),stroop&&stroop.results?stroop.results.length+" prove":"Disponibile");
 status("almostStatus",!!almost,almost?"Completato":"Disponibile");
-const canExport=!!participant&&!!profile&&(!!houde||!!stroop||!!almost);
+status("vptStatus",!!vpt&&Array.isArray(vpt.results),vpt&&vpt.results?vpt.results.length+" prove":"Non trovato");
+status("giudizioStatus",!!giudizio&&Array.isArray(giudizio.results),giudizio&&giudizio.results?giudizio.results.length+" situazioni":"Non trovato");
+const canExport=!!participant&&!!profile&&(!!houde||!!stroop||!!almost||!!vpt||!!giudizio);
 document.getElementById("export").disabled=!canExport;
 document.getElementById("send").disabled=!canExport;
 
@@ -87,11 +89,13 @@ document.getElementById("export").addEventListener("click",()=>{
  const wb=XLSX.utils.book_new();
  const profileRows=Object.entries(profile||{}).map(([campo,valore])=>({campo,valore:Array.isArray(valore)?valore.join("; "):(typeof valore==="object"&&valore!==null?JSON.stringify(valore):valore)}));
  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(profileRows.length?profileRows:[{informazione:"Profilo non disponibile"}]),"Profilo");
- const sessionRows=[{participant_id:participant,session,task_order_assigned:order,task_order_assigned_at:orderAssignedAt,task_block_order:blockOrder,task_block_order_assigned_at:blockOrderAssignedAt,exported_at:new Date().toISOString(),houde_present:!!houde,stroop_present:!!stroop,almost_present:!!almost}];
+ const sessionRows=[{participant_id:participant,session,task_order_assigned:order,task_order_assigned_at:orderAssignedAt,task_block_order:blockOrder,task_block_order_assigned_at:blockOrderAssignedAt,exported_at:new Date().toISOString(),houde_present:!!houde,stroop_present:!!stroop,almost_present:!!almost,vpt_present:!!vpt,giudizio_present:!!giudizio}];
  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sessionRows),"Sessione");
  const addRows=(name,rows)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows&&rows.length?rows:[{informazione:"Nessun dato registrato"}]),name);
  addRows("Sillogismi",houde&&houde.results);
  addRows("Stroop",stroop&&stroop.results);
+ addRows("VPT",vpt&&vpt.results);
+ addRows("Giudizio",giudizio&&giudizio.results);
  const almostMeta=almost?{participant_id:almost.participant_id,task:almost.task,video_id:almost.video_id,task_order:almost.task_order,video_started_at:almost.video_started_at,video_duration_s:almost.video_duration_s,pause_attempts:almost.pause_attempts,seek_anomalies:almost.seek_anomalies,completed_at:almost.completed_at}:null;
  addRows("Almost_eventi",almost&&almost.presses);
  addRows("Almost_riepilogo",almostMeta?[almostMeta]:null);
