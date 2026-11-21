@@ -1,0 +1,9 @@
+{
+  "name": "houde-experiment",
+  "compatibility_date": "2026-11-21",
+  "assets": {
+    "directory": "./"
+  },
+  "preview_urls": true,
+  "previews": {}
+}
