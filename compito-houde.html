@@ -11,7 +11,7 @@
 <footer><span>CR—01 / COGNITIVE RESEARCH</span><span>RAGIONAMENTO SILLOGISTICO · ADATTAMENTO ESPLORATIVO</span></footer>
 <script src="sequenza-compiti.js"></script>
 <script>
-const participant=sessionStorage.getItem("participant")||"",profile=JSON.parse(sessionStorage.getItem("participantProfile")||"null");
+const participant=sessionStorage.getItem("participant")||"",sessionId=sessionStorage.getItem("session")||"",profile=JSON.parse(sessionStorage.getItem("participantProfile")||"null");
 document.getElementById("participantLine").textContent=participant?"CODICE PARTECIPANTE: "+participant:"ACCESSO NON DISPONIBILE";
 document.getElementById("participantShort").textContent=participant;
 if(!participant||!profile)document.getElementById("instructions").innerHTML='<div class="notice">Profilo partecipante non trovato. Torna alla pagina iniziale e completa l’accesso.</div><div class="actions"><button type="button" onclick="location.href=\'index.html\'">TORNA ALL’ACCESSO</button></div>';
@@ -55,9 +55,10 @@ async function finish() {
 
   // Mantiene una copia locale dei risultati.
   localStorage.setItem(
-    "CR01_" + participant + "_HOUDE",
+    "CR01_" + participant + "_" + sessionId + "_HOUDE",
     JSON.stringify({
       participant_id: participant,
+      session_id: sessionId,
       profile,
       task: "houde_inspired_syllogistic_reasoning",
       results
