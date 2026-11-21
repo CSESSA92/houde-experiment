@@ -155,7 +155,7 @@ function answer(color,method){
  const correct=color===t.ink;
  if(t.phase==="experimental"){
   rows.push({
-   participant_id:participant,task:"digital_color_word_interference",item_id:t.id,phase:t.phase,
+   participant_id:participant,session_id:sessionId,task:"digital_color_word_interference",item_id:t.id,phase:t.phase,
    trial_order:index-3,word:t.word,ink_color:t.ink,condition:t.condition,
    response_color:color,correct:correct?1:0,response_time_ms:rt,
    response_method:method,device_type:/iPad|Tablet|Android/i.test(navigator.userAgent)?"tablet_or_mobile":"computer",
