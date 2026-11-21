@@ -46,7 +46,7 @@ button{min-height:44px;touch-action:manipulation}
 <section class="panel hidden" id="playerPanel">
 <div class="panel-title">VIDEO STIMULUS / ALMOST</div>
 <div class="video-shell"><div id="player"></div><div class="video-cover" id="videoCover">Preparazione del filmato…</div></div>
-<div class="monitor"><span id="playState">IN ATTESA DELLA RIPRODUZIONE</span><span id="elapsed">00:00</span></div>
+<div class="monitor"><span id="playState">IN ATTESA DELLA RIPRODUZIONE</span><span id="elapsed">00:00</span></div><div class="counter" aria-live="polite">EVENTI RILEVATI: <strong id="eventCount">0</strong></div>
 <div class="press-area"><button class="press-button" id="mentalize" disabled>HO FORMULATO UN'INTERPRETAZIONE</button><div class="feedback" id="feedback" aria-live="polite"></div></div>
 </section>
 <section class="panel hidden" id="complete">
@@ -58,9 +58,11 @@ button{min-height:44px;touch-action:manipulation}
 </main>
 <footer><span>CR—01 / COGNITIVE RESEARCH</span><span>ALMOST · AUTORILEVAZIONE DURANTE LA VISIONE</span></footer>
 <script src="https://www.youtube.com/iframe_api"></script>
+<script src="sequenza-compiti.js"></script>
 <script>
 const VIDEO_ID="7fQtVnOISVk";
 const participant=sessionStorage.getItem("participant")||"";
+const sessionId=sessionStorage.getItem("session")||"";
 const profile=JSON.parse(sessionStorage.getItem("participantProfile")||"null");
 const order=sessionStorage.getItem("taskOrder")||"houde_first";
 document.getElementById("participantLine").textContent=participant?"CODICE PARTECIPANTE: "+participant:"CODICE PARTECIPANTE NON DISPONIBILE";
@@ -101,12 +103,13 @@ function formatTime(s){s=Math.max(0,Math.floor(s||0));return String(Math.floor(s
 document.getElementById("mentalize").addEventListener("click",()=>{
  if(!started||ended||!player||player.getPlayerState()!==YT.PlayerState.PLAYING)return;
  const now=performance.now(),videoTime=player.getCurrentTime()||0;
- presses.push({event_number:presses.length+1,elapsed_ms:Math.round(now-startPerf),video_time_s:Math.round(videoTime*1000)/1000,wall_time:new Date().toISOString()});
+ presses.push({participant_id:participant,session_id:sessionId,event_number:presses.length+1,elapsed_ms:Math.round(now-startPerf),video_time_s:Math.round(videoTime*1000)/1000,wall_time:new Date().toISOString()});
  const button=document.getElementById("mentalize");
  button.classList.remove("flash");
  void button.offsetWidth;
  button.classList.add("flash");
  setTimeout(()=>button.classList.remove("flash"),220);
+ document.getElementById("eventCount").textContent=String(presses.length);
  document.getElementById("feedback").textContent="Rilevazione registrata.";
 });
 function finish(){
@@ -114,9 +117,9 @@ function finish(){
  document.getElementById("mentalize").disabled=true;document.getElementById("playState").textContent="RIPRODUZIONE COMPLETATA";
  document.getElementById("playerPanel").classList.add("hidden");document.getElementById("complete").classList.remove("hidden");
  const duration=player&&player.getDuration?player.getDuration():0;
- const record={participant_id:participant,profile,task:"almost_mentalization_self_detection",video_id:VIDEO_ID,task_order:order,video_started_at:startWall,video_duration_s:duration,press_count:presses.length,presses,pause_attempts:pauseAttempts,seek_anomalies:seekAnomalies,completed_at:new Date().toISOString(),delivery:"youtube_iframe_best_effort"};
- localStorage.setItem("CR01_"+participant+"_ALMOST",JSON.stringify(record));
- document.getElementById("summary").textContent="Durata del filmato: "+formatTime(duration)+". La prova è stata completata.";
+ const record={participant_id:participant,session_id:sessionId,profile,task:"almost_mentalization_self_detection",video_id:VIDEO_ID,task_order:order,video_started_at:startWall,video_duration_s:duration,press_count:presses.length,presses,pause_attempts:pauseAttempts,seek_anomalies:seekAnomalies,completed_at:new Date().toISOString(),delivery:"youtube_iframe_best_effort"};
+ localStorage.setItem("CR01_"+participant+"_"+sessionId+"_ALMOST",JSON.stringify(record));
+ document.getElementById("summary").textContent="Durata del filmato: "+formatTime(duration)+". Eventi rilevati: "+presses.length+". La prova è stata completata.";
 }
 document.getElementById("download").addEventListener("click",()=>{
  const header=["participant_id","task","video_id","task_order","event_number","elapsed_ms","video_time_s","wall_time","pause_attempts","seek_anomalies"];
@@ -126,14 +129,6 @@ document.getElementById("download").addEventListener("click",()=>{
  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");
  a.href=url;a.download="CR01_"+participant+"_ALMOST.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 });
-document.getElementById("continue").addEventListener("click",()=>{
- const blockOrder=sessionStorage.getItem("taskBlockOrder")||"inhibition_first";
- const cognitiveOrder=sessionStorage.getItem("taskOrder")||"houde_first";
- if(blockOrder==="almost_first"){
-  window.location.href=cognitiveOrder==="houde_first"?"compito-houde.html":"compito-stroop.html";
- }else{
-  window.location.href="esporta-dati.html";
- }
-});
+document.getElementById("continue").addEventListener("click",()=>window.cr01AdvanceTask("ALMOST"));
 </script>
 </body></html>

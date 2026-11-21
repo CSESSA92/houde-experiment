@@ -9,8 +9,9 @@
 <section class="panel hidden" id="task"><div class="meta"><span id="trialLabel">PROVA 1 / 16</span><span id="participantShort"></span></div><div class="progress"><span id="progressBar"></span></div><div class="stimulus"><div class="premise" id="premise1"></div><div class="premise" id="premise2"></div><div class="conclusion-label">CONCLUSIONE</div><div class="conclusion" id="conclusion"></div></div><div class="notice">La conclusione segue necessariamente dalle due premesse?</div><div class="responses"><button class="response" id="yes" type="button">SÌ, SEGUE LOGICAMENTE</button><button class="response" id="no" type="button">NO, NON SEGUE LOGICAMENTE</button></div></section>
 <section class="panel hidden" id="complete"><div class="panel-title">COMPITO COMPLETATO</div><h2>Hai terminato questa prova.</h2><p class="lead" id="saveStatus">Salvataggio dei risultati in corso...</p><div class="notice summary" id="summary"></div><div class="actions"><button class="secondary" id="download" type="button">SCARICA RISULTATI CSV ↓</button><button class="primary" id="continue" type="button">CONTINUA →</button></div></section></main>
 <footer><span>CR—01 / COGNITIVE RESEARCH</span><span>RAGIONAMENTO SILLOGISTICO · ADATTAMENTO ESPLORATIVO</span></footer>
+<script src="sequenza-compiti.js"></script>
 <script>
-const participant=sessionStorage.getItem("participant")||"",profile=JSON.parse(sessionStorage.getItem("participantProfile")||"null");
+const participant=sessionStorage.getItem("participant")||"",sessionId=sessionStorage.getItem("session")||"",profile=JSON.parse(sessionStorage.getItem("participantProfile")||"null");
 document.getElementById("participantLine").textContent=participant?"CODICE PARTECIPANTE: "+participant:"ACCESSO NON DISPONIBILE";
 document.getElementById("participantShort").textContent=participant;
 if(!participant||!profile)document.getElementById("instructions").innerHTML='<div class="notice">Profilo partecipante non trovato. Torna alla pagina iniziale e completa l’accesso.</div><div class="actions"><button type="button" onclick="location.href=\'index.html\'">TORNA ALL’ACCESSO</button></div>';
@@ -36,7 +37,7 @@ function shuffle(a){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.fl
 const ordered=shuffle(trials),device=/iPad|Tablet|Android/i.test(navigator.userAgent)?"tablet_or_mobile":"computer";
 let index=0,onset=0,results=[],finished=false,responding=false;
 function show(){responding=false;const t=ordered[index];document.getElementById("trialLabel").textContent="PROVA "+(index+1)+" / 16";document.getElementById("progressBar").style.width=(index/16*100)+"%";document.getElementById("premise1").textContent=t.p1;document.getElementById("premise2").textContent=t.p2;document.getElementById("conclusion").textContent=t.c;onset=performance.now();}
-function answer(response){if(finished||responding||document.getElementById("task").classList.contains("hidden"))return;responding=true;const t=ordered[index];results.push({participant_id:participant,task:"houde_inspired_syllogistic_reasoning",task_order:sessionStorage.getItem("taskOrder")||"",task_block_order:sessionStorage.getItem("taskBlockOrder")||"",item_id:t.id,presentation_order:index+1,logical_validity:t.logic,conclusion_believability:t.belief,premise_1:t.p1,premise_2:t.p2,conclusion:t.c,response:response,response_correct:response===t.valid?1:0,response_time_ms:Math.round(performance.now()-onset),device_type:device,completed_at:new Date().toISOString()});index++;if(index<16)show();else finish();}
+function answer(response){if(finished||responding||document.getElementById("task").classList.contains("hidden"))return;responding=true;const t=ordered[index];results.push({participant_id:participant,session_id:sessionId,task:"houde_inspired_syllogistic_reasoning",task_order:sessionStorage.getItem("taskOrder")||"",task_block_order:sessionStorage.getItem("taskBlockOrder")||"",item_id:t.id,presentation_order:index+1,logical_validity:t.logic,conclusion_believability:t.belief,premise_1:t.p1,premise_2:t.p2,conclusion:t.c,response:response,response_correct:response===t.valid?1:0,response_time_ms:Math.round(performance.now()-onset),device_type:device,completed_at:new Date().toISOString()});index++;if(index<16)show();else finish();}
 document.getElementById("begin").addEventListener("click",()=>{document.getElementById("instructions").classList.add("hidden");document.getElementById("task").classList.remove("hidden");show();});
 document.getElementById("yes").addEventListener("click",()=>answer(1));document.getElementById("no").addEventListener("click",()=>answer(0));
 async function finish() {
@@ -54,9 +55,10 @@ async function finish() {
 
   // Mantiene una copia locale dei risultati.
   localStorage.setItem(
-    "CR01_" + participant + "_HOUDE",
+    "CR01_" + participant + "_" + sessionId + "_HOUDE",
     JSON.stringify({
       participant_id: participant,
+      session_id: sessionId,
       profile,
       task: "houde_inspired_syllogistic_reasoning",
       results
@@ -66,106 +68,11 @@ async function finish() {
   const status = document.getElementById("saveStatus");
   const continueButton = document.getElementById("continue");
 
-  continueButton.disabled = true;
-  status.textContent = "Salvataggio dei risultati sul server in corso...";
-
-  const APP_URL = "https://script.google.com/macros/s/AKfycbzSVkpJE_cXYQSiLE0xnKjtUbLsevXeYzcyaKlz1eFjQrkcdpB5xsjT-nq_0sqM3BR-YA/exec";
-
-  const submissionId = "HOUDE_" + participant;
-
-  const payload = {
-    submission_id: submissionId,
-    participant_id: participant,
-    reasoning: results
-  };
-
-  const frame = document.createElement("iframe");
-  frame.name = "cr01HoudeUpload";
-  frame.hidden = true;
-  document.body.appendChild(frame);
-
-  const form = document.createElement("form");
-  form.method = "POST";
-  form.action = APP_URL;
-  form.target = frame.name;
-  form.hidden = true;
-
-  const input = document.createElement("input");
-  input.type = "hidden";
-  input.name = "payload";
-  input.value = JSON.stringify(payload);
-
-  form.appendChild(input);
-  document.body.appendChild(form);
-  form.submit();
-
-  await new Promise(resolve => setTimeout(resolve, 1500));
-
-  try {
-    for (let tentativo = 0; tentativo < 20; tentativo++) {
-
-      const confermato = await new Promise(resolve => {
-
-        const callbackName =
-          "cr01VerificaHoude_" + tentativo + "_" + Date.now();
-
-        const script = document.createElement("script");
-        let concluso = false;
-
-        function termina(esito) {
-          if (concluso) return;
-          concluso = true;
-          clearTimeout(timer);
-          delete window[callbackName];
-          script.remove();
-          resolve(esito);
-        }
-
-        window[callbackName] = function(result) {
-          termina(Boolean(result && result.success));
-        };
-
-        script.src =
-          APP_URL +
-          "?action=verificaInvio" +
-          "&submission_id=" + encodeURIComponent(submissionId) +
-          "&callback=" + callbackName +
-          "&t=" + Date.now();
-
-        script.onerror = function() {
-          termina(false);
-        };
-
-        const timer = setTimeout(() => termina(false), 4000);
-
-        document.body.appendChild(script);
-      });
-
-      if (confermato) {
-        status.textContent =
-          "Risultati registrati correttamente sul server.";
-
-        continueButton.disabled = false;
-        form.remove();
-        frame.remove();
-        return;
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-
-    throw new Error("Conferma del server non ricevuta.");
-
-  } catch (error) {
-
-    status.textContent =
-      "ATTENZIONE: salvataggio sul server non confermato. Non proseguire.";
-
-    console.error(error);
-    form.remove();
-    frame.remove();
-  }
+  // I risultati restano nel browser e vengono inviati una sola volta
+  // dalla pagina finale di esportazione, insieme agli altri compiti.
+  status.textContent = "Risultati salvati in questa sessione. L'invio all'archivio avverrà al termine di tutti i compiti.";
+  continueButton.disabled = false;
 }
 document.getElementById("download").addEventListener("click",()=>{const cols=Object.keys(results[0]||{}),q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',csv=[cols.map(q).join(","),...results.map(r=>cols.map(k=>q(r[k])).join(","))].join("\r\n"),blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="CR01_"+participant+"_SILLOGISMI.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);});
-document.getElementById("continue").addEventListener("click",()=>{const co=sessionStorage.getItem("taskOrder")||"houde_first",bo=sessionStorage.getItem("taskBlockOrder")||"inhibition_first";if(co==="houde_first")location.href="compito-stroop.html";else location.href=bo==="inhibition_first"?"almost.html":"esporta-dati.html";});
+document.getElementById("continue").addEventListener("click",()=>window.cr01AdvanceTask("HOUDE"));
 </script></body></html>

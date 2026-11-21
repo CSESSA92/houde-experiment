@@ -974,7 +974,8 @@ document.getElementById("startTask").addEventListener("click", async function() 
     ALMOST: "almost.html",
     HOUDE: "compito-houde.html",
     STROOP: "compito-stroop.html",
-    VPT: "decentramento-prospettive-12.html"
+    VPT: "decentramento-prospettive-12.html",
+    GIUDIZIO: "giudizio.html"
   };
 
   // Verifica che partecipante, sessione e sequenza siano disponibili.
@@ -985,9 +986,10 @@ document.getElementById("startTask").addEventListener("click", async function() 
   }
 
   if (
-    taskOrder.length !== 4 ||
-    !taskOrder.every(task => Object.prototype.hasOwnProperty.call(taskPages, task)) ||
-    new Set(taskOrder).size !== 4
+    taskOrder.length !== 5 ||
+    taskOrder[4] !== "GIUDIZIO" ||
+    !taskOrder.slice(0,4).every(task => ["ALMOST","HOUDE","STROOP","VPT"].includes(task)) ||
+    new Set(taskOrder.slice(0,4)).size !== 4
   ) {
     alert("Sequenza dei compiti non valida. Torna alla pagina iniziale.");
     window.location.href = "index.html";
@@ -1032,7 +1034,7 @@ document.getElementById("backToProfile").addEventListener("click", function() {
 // INVIO DEL PROFILO AL SERVER CR-01
 async function cr01InviaProfilo() {
 
-  const APP_URL = "https://script.google.com/macros/s/AKfycbzSVkpJE_cXYQSiLE0xnKjtUbLsevXeYzcyaKlz1eFjQrkcdpB5xsjT-nq_0sqM3BR-YA/exec";
+  const APP_URL = "https://script.google.com/macros/s/AKfycbyU_0KhxcYNrwx3skqGeNDjTiDxH6ta9YY72l54EKgL568FiAUKuCGLaT3QdV2gM3Cq/exec";
 
   const profile = JSON.parse(
     sessionStorage.getItem("participantProfile") || "{}"
@@ -1042,7 +1044,7 @@ async function cr01InviaProfilo() {
     throw new Error("Profilo del partecipante non disponibile.");
   }
 
-  const submissionId = "PROFILE_" + participant;
+  const submissionId = "PROFILE_" + participant + "_" + session;
 
   const payload = {
     submission_id: submissionId,

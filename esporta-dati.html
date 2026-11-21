@@ -15,8 +15,8 @@ button{min-height:44px;touch-action:manipulation}
 @media(forced-colors:active){button,.card,input,select,textarea{forced-color-adjust:auto;border:1px solid ButtonText}}
 
 </style></head><body>
-<a class="skip-link" href="#main-content">Salta al contenuto principale</a><header>◇ &nbsp; COGNITIVE RESEARCH SYSTEM / CR—01</header><main id="main-content" tabindex="-1"><div class="overline">DATA MANAGEMENT / EXPORT</div><h1>Esportazione dei risultati.</h1><p class="lead">Verifica i dati presenti in questo browser e crea un unico file Excel (.xlsx) con fogli separati per profilo, ragionamento sillogistico, Stroop e autorilevazione durante il filmato.</p>
-<section class="panel"><div class="status"><span>Codice partecipante</span><strong id="pid">—</strong></div><div class="status"><span>Profilo</span><strong id="profileStatus">—</strong></div><div class="status"><span>Ragionamento sillogistico</span><strong id="houdeStatus">—</strong></div><div class="status"><span>Stroop digitale</span><strong id="stroopStatus">—</strong></div><div class="status"><span>Almost</span><strong id="almostStatus">—</strong></div><button id="export" disabled>GENERA FILE EXCEL (.XLSX) ↓</button><button id="send" disabled>INVIA I DATI ALL'ARCHIVIO UNISA →</button><div class="notice" id="message">I dati sono letti dalla memoria locale del browser. Puoi conservarne una copia Excel e inviare una copia all'archivio istituzionale. L'esito dell'invio dovrà essere verificato nel foglio Google Sheets.</div><button id="feedback" style="display:none" type="button">CONTINUA ALLA RESTITUZIONE FORMATIVA →</button></section></main><footer>CR—01 / ESPORTAZIONE LOCALE · DATI NON TRASMESSI AUTOMATICAMENTE</footer>
+<a class="skip-link" href="#main-content">Salta al contenuto principale</a><header>◇ &nbsp; COGNITIVE RESEARCH SYSTEM / CR—01</header><main id="main-content" tabindex="-1"><div class="overline">DATA MANAGEMENT / EXPORT</div><h1>Esportazione dei risultati.</h1><p class="lead">Verifica i dati presenti in questo browser e crea un file Excel (.xlsx) con fogli separati per profilo, ciascun compito e sessione.</p>
+<section class="panel"><div class="status"><span>Codice partecipante</span><strong id="pid">—</strong></div><div class="status"><span>Profilo</span><strong id="profileStatus">—</strong></div><div class="status"><span>Ragionamento sillogistico</span><strong id="houdeStatus">—</strong></div><div class="status"><span>Stroop digitale</span><strong id="stroopStatus">—</strong></div><div class="status"><span>Almost</span><strong id="almostStatus">—</strong></div><div class="status"><span>VPT</span><strong id="vptStatus">—</strong></div><div class="status"><span>Giudizio</span><strong id="giudizioStatus">—</strong></div><button id="export" disabled>GENERA FILE EXCEL (.XLSX) ↓</button><button id="send" disabled>INVIA I DATI ALL'ARCHIVIO UNISA →</button><div class="notice" id="message">I dati sono letti dalla memoria locale del browser. Puoi conservarne una copia Excel e inviare una copia all'archivio istituzionale. L'esito dell'invio dovrà essere verificato nel foglio Google Sheets.</div><button id="feedback" style="display:none" type="button">CONTINUA ALLA RESTITUZIONE FORMATIVA →</button></section></main><footer>CR—01 / ESPORTAZIONE LOCALE · DATI NON TRASMESSI AUTOMATICAMENTE</footer>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 const participant=sessionStorage.getItem("participant")||"";
@@ -26,27 +26,41 @@ const order=sessionStorage.getItem("taskOrder")||"";
 const orderAssignedAt=sessionStorage.getItem("taskOrderAssignedAt")||"";
 const blockOrder=sessionStorage.getItem("taskBlockOrder")||"";
 const blockOrderAssignedAt=sessionStorage.getItem("taskBlockOrderAssignedAt")||"";
-const load=suffix=>{try{return JSON.parse(localStorage.getItem("CR01_"+participant+"_"+suffix)||"null")}catch(e){return null}};
-const houde=participant?load("HOUDE"):null,stroop=participant?load("STROOP"):null,almost=participant?load("ALMOST"):null;
+const load=suffix=>{try{return JSON.parse(localStorage.getItem("CR01_"+participant+"_"+session+"_"+suffix)||"null")}catch(e){return null}};
+const houde=participant&&session?load("HOUDE"):null,stroop=participant&&session?load("STROOP"):null,almost=participant&&session?load("ALMOST"):null,vpt=participant&&session?load("VPT"):null,giudizio=participant&&session?load("GIUDIZIO"):null;
 document.getElementById("pid").textContent=participant||"Non disponibile";
-function status(id,ok,label){const e=document.getElementById(id);e.textContent=ok?label:"Non trovato";e.className=ok?"ok":"missing";}
-status("profileStatus",!!profile, "Disponibile");
-status("houdeStatus",!!houde&&Array.isArray(houde.results),houde&&houde.results?houde.results.length+" prove":"Disponibile");
-status("stroopStatus",!!stroop&&Array.isArray(stroop.results),stroop&&stroop.results?stroop.results.length+" prove":"Disponibile");
-status("almostStatus",!!almost,almost?"Completato":"Disponibile");
-const canExport=!!participant&&!!profile&&(!!houde||!!stroop||!!almost);
+function status(id,ok,label){const e=document.getElementById(id);e.textContent=label;e.className=ok?"ok":"missing";}
+const validRecord=(r,n)=>!!r&&r.participant_id===participant&&r.session_id===session&&Array.isArray(r.results)&&r.results.length===n;
+const checks={
+ houde:validRecord(houde,16),
+ stroop:validRecord(stroop,24),
+ almost:!!almost&&almost.participant_id===participant&&almost.session_id===session&&!!almost.completed_at&&Number(almost.video_duration_s)>0&&Array.isArray(almost.presses)&&almost.press_count===almost.presses.length,
+ vpt:validRecord(vpt,15),
+ giudizio:validRecord(giudizio,12)
+};
+const actual={houde:houde&&Array.isArray(houde.results)?houde.results.length:0,stroop:stroop&&Array.isArray(stroop.results)?stroop.results.length:0,almost:almost&&Array.isArray(almost.presses)?("completato · "+almost.presses.length+" rilevazioni"):"—",vpt:vpt&&Array.isArray(vpt.results)?vpt.results.length:0,giudizio:giudizio&&Array.isArray(giudizio.results)?giudizio.results.length:0};
+status("profileStatus",!!profile&&profile.session===session,"Disponibile");
+status("houdeStatus",checks.houde,actual.houde+" / 16 prove");
+status("stroopStatus",checks.stroop,actual.stroop+" / 24 prove");
+status("almostStatus",checks.almost,checks.almost?"Completato":"Incompleto / non trovato");
+status("vptStatus",checks.vpt,actual.vpt+" / 15 prove");
+status("giudizioStatus",checks.giudizio,actual.giudizio+" / 12 situazioni");
+const canExport=!!participant&&!!session&&!!profile&&!!(houde||stroop||almost||vpt||giudizio);
+const canSend=!!participant&&!!session&&!!profile&&Object.values(checks).every(Boolean);
 document.getElementById("export").disabled=!canExport;
-document.getElementById("send").disabled=!canExport;
+document.getElementById("send").disabled=!canSend;
+if(!canSend)document.getElementById("message").textContent="Esportazione Excel disponibile quando è presente almeno un compito della sessione corrente. L'invio all'archivio è abilitato soltanto quando tutti e cinque i compiti risultano completi e coerenti con questa sessione.";
 
 document.getElementById("send").addEventListener("click", async ()=>{
  const button=document.getElementById("send");
  const message=document.getElementById("message");
- if(!canExport)return;
+ if(!canSend){message.textContent="Invio bloccato: uno o più compiti sono assenti, incompleti o non appartengono a questa sessione. Puoi comunque scaricare il file Excel per controllare i dati disponibili.";return;}
  if(!confirm("Inviare i dati di questa sessione all'archivio Google Sheets istituzionale?"))return;
  button.disabled=true;
  button.textContent="INVIO IN CORSO…";
  message.textContent="Invio in corso. Non chiudere questa pagina.";
  const payload={
+  submission_id:"FINAL_"+participant+"_"+(session||"main"),
   participant_id:participant,
   profile:profile,
   session:{
@@ -56,47 +70,70 @@ document.getElementById("send").addEventListener("click", async ()=>{
    task_block_order:blockOrder,
    task_block_order_assigned_at:blockOrderAssignedAt,
    submitted_at:new Date().toISOString(),
-   houde_present:!!houde,
-   stroop_present:!!stroop,
-   almost_present:!!almost
+   houde_present:checks.houde,
+   stroop_present:checks.stroop,
+   almost_present:checks.almost,
+   vpt_present:checks.vpt,
+   giudizio_present:checks.giudizio
   },
   reasoning:houde&&Array.isArray(houde.results)?houde.results:[],
   stroop:stroop&&Array.isArray(stroop.results)?stroop.results:[],
-  almost:almost||{}
+  vpt:vpt&&Array.isArray(vpt.results)?vpt.results:[],
+  almost:almost||{},
+  giudizio:giudizio&&Array.isArray(giudizio.results)?giudizio.results:[]
  };
+ const APP_URL="https://script.google.com/macros/s/AKfycbyU_0KhxcYNrwx3skqGeNDjTiDxH6ta9YY72l54EKgL568FiAUKuCGLaT3QdV2gM3Cq/exec";
+ let frame=null,form=null;
  try{
-  await fetch("https://script.google.com/macros/s/AKfycbzSVkpJE_cXYQSiLE0xnKjtUbLsevXeYzcyaKlz1eFjQrkcdpB5xsjT-nq_0sqM3BR-YA/exec",{
-   method:"POST",
-   mode:"no-cors",
-   headers:{"Content-Type":"text/plain;charset=utf-8"},
-   body:JSON.stringify(payload)
-  });
-  message.textContent="Richiesta di invio trasmessa dal browser. Per sicurezza, verifica che il codice partecipante e le righe dei compiti compaiano nei fogli Google Sheets. Il browser non consente a questa pagina di leggere la conferma del server.";
-  button.textContent="RICHIESTA INVIATA";
+  frame=document.createElement("iframe");frame.name="cr01FinalUploadFrame";frame.hidden=true;document.body.appendChild(frame);
+  form=document.createElement("form");form.method="POST";form.action=APP_URL;form.target=frame.name;form.hidden=true;
+  const input=document.createElement("input");input.type="hidden";input.name="payload";input.value=JSON.stringify(payload);form.appendChild(input);document.body.appendChild(form);form.submit();
+  message.textContent="Dati trasmessi. Attendo la conferma di registrazione dell'archivio…";
+  let confirmed=false;
+  for(let attempt=0;attempt<20&&!confirmed;attempt++){
+   confirmed=await new Promise(resolve=>{
+    const callbackName="cr01VerificaInvioFinale_"+attempt+"_"+Date.now();
+    const script=document.createElement("script");let settled=false;
+    const finish=result=>{if(settled)return;settled=true;clearTimeout(timer);delete window[callbackName];script.remove();resolve(result);};
+    window[callbackName]=result=>finish(Boolean(result&&result.success));
+    script.src=APP_URL+"?action=verificaInvio&submission_id="+encodeURIComponent(payload.submission_id)+"&callback="+callbackName+"&t="+Date.now();
+    script.onerror=()=>finish(false);
+    const timer=setTimeout(()=>finish(false),4000);
+    document.body.appendChild(script);
+   });
+   if(!confirmed&&attempt<19)await new Promise(resolve=>setTimeout(resolve,1000));
+  }
+  if(!confirmed)throw new Error("il server non ha restituito la conferma entro il tempo previsto");
+  message.textContent="Archivio: ricezione confermata dal server per la sessione "+session+". Conserva comunque il file Excel come copia di sicurezza.";
+  button.textContent="DATI REGISTRATI ✓";
   document.getElementById("feedback").style.display="block";
   document.getElementById("feedback").addEventListener("click",()=>{window.location.href="restituzione.html";},{once:true});
  }catch(error){
-  message.textContent="Invio non riuscito: "+error.message+". I dati sono ancora disponibili in questo browser: genera il file Excel come copia di sicurezza.";
-  button.disabled=false;
-  button.textContent="RIPROVA INVIO →";
- }
+  message.textContent="Conferma non ricevuta: "+error.message+". Non considerare concluso l'invio. I dati restano nel browser; scarica il file Excel e riprova più tardi.";
+  button.disabled=false;button.textContent="RIPROVA INVIO →";
+ }finally{if(form)form.remove();if(frame)frame.remove();}
 });
 
 document.getElementById("export").addEventListener("click",()=>{
  if(typeof XLSX==="undefined"){document.getElementById("message").textContent="Libreria Excel non disponibile. Verifica la connessione a Internet e ricarica la pagina.";return;}
  const wb=XLSX.utils.book_new();
+ const integrityRows=[["Compito","Atteso","Rilevato","Valido"],["HOUDE",16,actual.houde,checks.houde],["STROOP",24,actual.stroop,checks.stroop],["ALMOST","1 video completato",actual.almost,checks.almost],["VPT",15,actual.vpt,checks.vpt],["GIUDIZIO",12,actual.giudizio,checks.giudizio],["SESSIONE",session,session,!!session]];
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(integrityRows),"Controllo_qualita");
  const profileRows=Object.entries(profile||{}).map(([campo,valore])=>({campo,valore:Array.isArray(valore)?valore.join("; "):(typeof valore==="object"&&valore!==null?JSON.stringify(valore):valore)}));
  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(profileRows.length?profileRows:[{informazione:"Profilo non disponibile"}]),"Profilo");
- const sessionRows=[{participant_id:participant,session,task_order_assigned:order,task_order_assigned_at:orderAssignedAt,task_block_order:blockOrder,task_block_order_assigned_at:blockOrderAssignedAt,exported_at:new Date().toISOString(),houde_present:!!houde,stroop_present:!!stroop,almost_present:!!almost}];
+ const sessionRows=[{participant_id:participant,session,task_order_assigned:order,task_order_assigned_at:orderAssignedAt,task_block_order:blockOrder,task_block_order_assigned_at:blockOrderAssignedAt,exported_at:new Date().toISOString(),houde_present:checks.houde,stroop_present:checks.stroop,almost_present:checks.almost,vpt_present:checks.vpt,giudizio_present:checks.giudizio}];
  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sessionRows),"Sessione");
  const addRows=(name,rows)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows&&rows.length?rows:[{informazione:"Nessun dato registrato"}]),name);
  addRows("Sillogismi",houde&&houde.results);
  addRows("Stroop",stroop&&stroop.results);
+ addRows("VPT",vpt&&vpt.results);
+ addRows("Giudizio",giudizio&&giudizio.results);
  const almostMeta=almost?{participant_id:almost.participant_id,task:almost.task,video_id:almost.video_id,task_order:almost.task_order,video_started_at:almost.video_started_at,video_duration_s:almost.video_duration_s,pause_attempts:almost.pause_attempts,seek_anomalies:almost.seek_anomalies,completed_at:almost.completed_at}:null;
  addRows("Almost_eventi",almost&&almost.presses);
  addRows("Almost_riepilogo",almostMeta?[almostMeta]:null);
  const safe=participant.replace(/[^a-zA-Z0-9_-]/g,"_");
- XLSX.writeFile(wb,"CR01_"+safe+"_RISULTATI.xlsx");
+ const safeSession=session.replace(/[^a-zA-Z0-9_-]/g,"_");
+ XLSX.writeFile(wb,"CR01_"+safe+"_"+safeSession+"_RISULTATI.xlsx");
  document.getElementById("message").textContent="File Excel generato. Controlla che contenga tutti i fogli attesi e conserva una copia sicura.";
 });
 </script></body></html>

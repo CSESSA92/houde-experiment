@@ -252,7 +252,7 @@ main:focus { outline:none; }
 <script>
 
 const API_URL =
-"https://script.google.com/macros/s/AKfycbzSVkpJE_cXYQSiLE0xnKjtUbLsevXeYzcyaKlz1eFjQrkcdpB5xsjT-nq_0sqM3BR-YA/exec";
+"https://script.google.com/macros/s/AKfycbyU_0KhxcYNrwx3skqGeNDjTiDxH6ta9YY72l54EKgL568FiAUKuCGLaT3QdV2gM3Cq/exec";
 
 const startButton = document.getElementById("start");
 const errorBox = document.getElementById("error");
@@ -362,13 +362,15 @@ startButton.addEventListener("click", async () => {
 
     const participant = result.participant_id;
     const session = "main";
-    const tasks = result.tasks;
+    const baseTasks = result.tasks;
 
-    if (!participant || !Array.isArray(tasks) || tasks.length !== 4) {
-      throw new Error(
-        "Il server non ha restituito tutti i dati necessari."
-      );
+    if (!participant || !Array.isArray(baseTasks) || baseTasks.length !== 4 ||
+        !baseTasks.every(task => ["ALMOST","HOUDE","STROOP","VPT"].includes(task)) ||
+        new Set(baseTasks).size !== 4) {
+      throw new Error("Il server non ha restituito una sequenza valida dei quattro compiti principali.");
     }
+    // GIUDIZIO è sempre collocato al termine della sequenza.
+    const tasks = [...baseTasks, "GIUDIZIO"];
 
     // Memorizzazione persistente sul dispositivo
     localStorage.setItem("participant", participant);
@@ -380,6 +382,9 @@ startButton.addEventListener("click", async () => {
     sessionStorage.setItem("participant", participant);
     sessionStorage.setItem("session", session);
     sessionStorage.setItem("taskOrder", JSON.stringify(tasks));
+    // Chiavi lette dal gestore della sequenza dei cinque compiti
+    sessionStorage.setItem("CR01_TASK_ORDER", JSON.stringify(tasks));
+    sessionStorage.setItem("CR01_TASK_INDEX", "0");
     sessionStorage.setItem("sequence", result.sequence || "");
 
     statusText.textContent = "SESSION INITIALIZED";
