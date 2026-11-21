@@ -103,7 +103,7 @@ function formatTime(s){s=Math.max(0,Math.floor(s||0));return String(Math.floor(s
 document.getElementById("mentalize").addEventListener("click",()=>{
  if(!started||ended||!player||player.getPlayerState()!==YT.PlayerState.PLAYING)return;
  const now=performance.now(),videoTime=player.getCurrentTime()||0;
- presses.push({event_number:presses.length+1,elapsed_ms:Math.round(now-startPerf),video_time_s:Math.round(videoTime*1000)/1000,wall_time:new Date().toISOString()});
+ presses.push({participant_id:participant,session_id:sessionId,event_number:presses.length+1,elapsed_ms:Math.round(now-startPerf),video_time_s:Math.round(videoTime*1000)/1000,wall_time:new Date().toISOString()});
  const button=document.getElementById("mentalize");
  button.classList.remove("flash");
  void button.offsetWidth;
