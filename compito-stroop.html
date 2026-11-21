@@ -90,6 +90,7 @@ button{min-height:44px;touch-action:manipulation}
 <script src="sequenza-compiti.js"></script>
 <script>
 const participant=sessionStorage.getItem("participant")||"";
+const sessionId=sessionStorage.getItem("session")||"";
 const profile=JSON.parse(sessionStorage.getItem("participantProfile")||"null");
 if(!participant||!profile){
  document.getElementById("instructions").innerHTML='<div class="notice">Profilo partecipante non trovato. Torna alla pagina iniziale e completa l\'accesso.</div><div class="actions"><button onclick="location.href=\'index.html\'">TORNA ALL’ACCESSO</button></div>';
@@ -174,7 +175,7 @@ function finish(){
  document.getElementById("complete").classList.remove("hidden");
  const acc=rows.length?Math.round(rows.reduce((s,r)=>s+r.correct,0)/rows.length*100):0;
  document.getElementById("summary").textContent="Prove sperimentali: "+rows.length+" · Accuratezza: "+acc+"% · Codice partecipante: "+participant+". Adattamento digitale esplorativo: non equivale a una versione standardizzata del test Stroop.";
- localStorage.setItem("CR01_"+participant+"_STROOP",JSON.stringify({participant_id:participant,profile,task:"digital_color_word_interference",results:rows}));
+ localStorage.setItem("CR01_"+participant+"_"+sessionId+"_STROOP",JSON.stringify({participant_id:participant,session_id:sessionId,profile,task:"digital_color_word_interference",results:rows}));
 }
 document.getElementById("begin").addEventListener("click",start);
 document.getElementById("download").addEventListener("click",()=>{
