@@ -62,6 +62,7 @@ button{min-height:44px;touch-action:manipulation}
 <script>
 const VIDEO_ID="7fQtVnOISVk";
 const participant=sessionStorage.getItem("participant")||"";
+const sessionId=sessionStorage.getItem("session")||"";
 const profile=JSON.parse(sessionStorage.getItem("participantProfile")||"null");
 const order=sessionStorage.getItem("taskOrder")||"houde_first";
 document.getElementById("participantLine").textContent=participant?"CODICE PARTECIPANTE: "+participant:"CODICE PARTECIPANTE NON DISPONIBILE";
@@ -115,8 +116,8 @@ function finish(){
  document.getElementById("mentalize").disabled=true;document.getElementById("playState").textContent="RIPRODUZIONE COMPLETATA";
  document.getElementById("playerPanel").classList.add("hidden");document.getElementById("complete").classList.remove("hidden");
  const duration=player&&player.getDuration?player.getDuration():0;
- const record={participant_id:participant,profile,task:"almost_mentalization_self_detection",video_id:VIDEO_ID,task_order:order,video_started_at:startWall,video_duration_s:duration,press_count:presses.length,presses,pause_attempts:pauseAttempts,seek_anomalies:seekAnomalies,completed_at:new Date().toISOString(),delivery:"youtube_iframe_best_effort"};
- localStorage.setItem("CR01_"+participant+"_ALMOST",JSON.stringify(record));
+ const record={participant_id:participant,session_id:sessionId,profile,task:"almost_mentalization_self_detection",video_id:VIDEO_ID,task_order:order,video_started_at:startWall,video_duration_s:duration,press_count:presses.length,presses,pause_attempts:pauseAttempts,seek_anomalies:seekAnomalies,completed_at:new Date().toISOString(),delivery:"youtube_iframe_best_effort"};
+ localStorage.setItem("CR01_"+participant+"_"+sessionId+"_ALMOST",JSON.stringify(record));
  document.getElementById("summary").textContent="Durata del filmato: "+formatTime(duration)+". La prova è stata completata.";
 }
 document.getElementById("download").addEventListener("click",()=>{
