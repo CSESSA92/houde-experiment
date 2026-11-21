@@ -67,105 +67,10 @@ async function finish() {
   const status = document.getElementById("saveStatus");
   const continueButton = document.getElementById("continue");
 
-  continueButton.disabled = true;
-  status.textContent = "Salvataggio dei risultati sul server in corso...";
-
-  const APP_URL = "https://script.google.com/macros/s/AKfycbzSVkpJE_cXYQSiLE0xnKjtUbLsevXeYzcyaKlz1eFjQrkcdpB5xsjT-nq_0sqM3BR-YA/exec";
-
-  const submissionId = "HOUDE_" + participant;
-
-  const payload = {
-    submission_id: submissionId,
-    participant_id: participant,
-    reasoning: results
-  };
-
-  const frame = document.createElement("iframe");
-  frame.name = "cr01HoudeUpload";
-  frame.hidden = true;
-  document.body.appendChild(frame);
-
-  const form = document.createElement("form");
-  form.method = "POST";
-  form.action = APP_URL;
-  form.target = frame.name;
-  form.hidden = true;
-
-  const input = document.createElement("input");
-  input.type = "hidden";
-  input.name = "payload";
-  input.value = JSON.stringify(payload);
-
-  form.appendChild(input);
-  document.body.appendChild(form);
-  form.submit();
-
-  await new Promise(resolve => setTimeout(resolve, 1500));
-
-  try {
-    for (let tentativo = 0; tentativo < 20; tentativo++) {
-
-      const confermato = await new Promise(resolve => {
-
-        const callbackName =
-          "cr01VerificaHoude_" + tentativo + "_" + Date.now();
-
-        const script = document.createElement("script");
-        let concluso = false;
-
-        function termina(esito) {
-          if (concluso) return;
-          concluso = true;
-          clearTimeout(timer);
-          delete window[callbackName];
-          script.remove();
-          resolve(esito);
-        }
-
-        window[callbackName] = function(result) {
-          termina(Boolean(result && result.success));
-        };
-
-        script.src =
-          APP_URL +
-          "?action=verificaInvio" +
-          "&submission_id=" + encodeURIComponent(submissionId) +
-          "&callback=" + callbackName +
-          "&t=" + Date.now();
-
-        script.onerror = function() {
-          termina(false);
-        };
-
-        const timer = setTimeout(() => termina(false), 4000);
-
-        document.body.appendChild(script);
-      });
-
-      if (confermato) {
-        status.textContent =
-          "Risultati registrati correttamente sul server.";
-
-        continueButton.disabled = false;
-        form.remove();
-        frame.remove();
-        return;
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-
-    throw new Error("Conferma del server non ricevuta.");
-
-  } catch (error) {
-
-    status.textContent =
-      "ATTENZIONE: salvataggio sul server non confermato. Non proseguire.";
-
-    console.error(error);
-    form.remove();
-    frame.remove();
-  }
+  // I risultati restano nel browser e vengono inviati una sola volta
+  // dalla pagina finale di esportazione, insieme agli altri compiti.
+  status.textContent = "Risultati salvati in questa sessione. L'invio all'archivio avverrà al termine di tutti i compiti.";
+  continueButton.disabled = false;
 }
 document.getElementById("download").addEventListener("click",()=>{const cols=Object.keys(results[0]||{}),q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',csv=[cols.map(q).join(","),...results.map(r=>cols.map(k=>q(r[k])).join(","))].join("\r\n"),blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="CR01_"+participant+"_SILLOGISMI.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);});
 document.getElementById("continue").addEventListener("click",()=>window.cr01AdvanceTask("HOUDE"));
