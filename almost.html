@@ -58,6 +58,7 @@ button{min-height:44px;touch-action:manipulation}
 </main>
 <footer><span>CR—01 / COGNITIVE RESEARCH</span><span>ALMOST · AUTORILEVAZIONE DURANTE LA VISIONE</span></footer>
 <script src="https://www.youtube.com/iframe_api"></script>
+<script src="sequenza-compiti.js"></script>
 <script>
 const VIDEO_ID="7fQtVnOISVk";
 const participant=sessionStorage.getItem("participant")||"";
@@ -126,14 +127,6 @@ document.getElementById("download").addEventListener("click",()=>{
  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");
  a.href=url;a.download="CR01_"+participant+"_ALMOST.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 });
-document.getElementById("continue").addEventListener("click",()=>{
- const blockOrder=sessionStorage.getItem("taskBlockOrder")||"inhibition_first";
- const cognitiveOrder=sessionStorage.getItem("taskOrder")||"houde_first";
- if(blockOrder==="almost_first"){
-  window.location.href=cognitiveOrder==="houde_first"?"compito-houde.html":"compito-stroop.html";
- }else{
-  window.location.href="esporta-dati.html";
- }
-});
+document.getElementById("continue").addEventListener("click",()=>window.cr01AdvanceTask("ALMOST"));
 </script>
 </body></html>
