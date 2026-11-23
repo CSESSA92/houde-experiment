@@ -100,8 +100,10 @@
     }
     function finish(mode){
       const s=snapshot(),data=read(CONDITIONS_KEY,{});
-      data.fullscreen_attivo_all_avvio=s.fullscreen_attivo;
-      data.modalita_visualizzazione=mode||(s.fullscreen_attivo?"FULLSCREEN":"ADATTIVA");
+      if(data.fullscreen_attivo_all_avvio===undefined) data.fullscreen_attivo_all_avvio=s.fullscreen_attivo;
+      if(data.modalita_visualizzazione==="FULLSCREEN_DISPONIBILE" || data.modalita_visualizzazione==="ADATTIVA_IOS" || !data.modalita_visualizzazione) {
+        data.modalita_visualizzazione=mode||(s.fullscreen_attivo?"FULLSCREEN":"ADATTIVA");
+      }
       data.ultimo_controllo_il=new Date().toISOString(); write(CONDITIONS_KEY,data);
       recordEvent("AVVIO_COMPITO","Modalità: "+data.modalita_visualizzazione);
       overlay.remove(); if(typeof onReady==="function") onReady(data.modalita_visualizzazione);
