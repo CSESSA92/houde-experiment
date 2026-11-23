@@ -58,6 +58,7 @@ button{min-height:44px;touch-action:manipulation}
 </main>
 <footer><span>CR—01 / COGNITIVE RESEARCH</span><span>ALMOST · AUTORILEVAZIONE DURANTE LA VISIONE</span></footer>
 <script src="https://www.youtube.com/iframe_api"></script>
+<script src="fullscreen.js"></script>
 <script src="sequenza-compiti.js"></script>
 <script>
 const VIDEO_ID="7fQtVnOISVk";
@@ -66,13 +67,20 @@ const sessionId=sessionStorage.getItem("session")||"";
 const profile=JSON.parse(sessionStorage.getItem("participantProfile")||"null");
 const order=sessionStorage.getItem("taskOrder")||"houde_first";
 document.getElementById("participantLine").textContent=participant?"CODICE PARTECIPANTE: "+participant:"CODICE PARTECIPANTE NON DISPONIBILE";
-let player=null,playerReady=false,started=false,ended=false,startPerf=0,startWall="",presses=[],pauseAttempts=0,seekAnomalies=0,lastObservedTime=0,lastObservedPerf=0,monitorTimer=null;
+let player=null,playerReady=false,started=false,readyToStart=false,ended=false,startPerf=0,startWall="",presses=[],pauseAttempts=0,seekAnomalies=0,lastObservedTime=0,lastObservedPerf=0,monitorTimer=null;
 if(!participant||!profile){document.getElementById("instructions").innerHTML='<div class="notice">Profilo partecipante non trovato. Torna alla pagina iniziale e completa l\'accesso.</div><div class="actions"><button onclick="location.href=\'index.html\'">TORNA ALL’ACCESSO</button></div>';}
 window.onYouTubeIframeAPIReady=function(){
  player=new YT.Player("player",{videoId:VIDEO_ID,playerVars:{autoplay:0,controls:0,disablekb:1,fs:0,playsinline:1,rel:0,modestbranding:1,iv_load_policy:3},events:{onReady:()=>{playerReady=true;const iframe=player.getIframe();if(iframe)iframe.title="Cortometraggio Almost, utilizzato come stimolo della prova";document.getElementById("videoCover").textContent="Filmato pronto. Premi «Avvia il filmato» per iniziare.";},onStateChange:onPlayerState}});
 };
 document.getElementById("startVideo").addEventListener("click",()=>{
  if(!playerReady||started)return;
+ if(!readyToStart){
+  CR01Display.createGate(()=>{
+   readyToStart=true;
+   document.getElementById("startVideo").textContent="AVVIA IL FILMATO →";
+  },{task:"ALMOST"});
+  return;
+ }
  started=true;
  document.getElementById("instructions").classList.add("hidden");
  document.getElementById("playerPanel").classList.remove("hidden");
