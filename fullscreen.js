@@ -95,7 +95,7 @@
       status.textContent="Dispositivo: "+s.tipo_dispositivo.toLowerCase()+" · Area disponibile: "+s.viewport_larghezza+" × "+s.viewport_altezza+" px · Orientamento: "+s.orientamento.toLowerCase()+".";
       if(!ok){message.textContent="L'area di visualizzazione è troppo ridotta per avviare la prova (minimo 320 × 300 px). Ingrandisci la finestra o modifica l'orientamento, quindi riprova.";primary.textContent="RICONTROLLA";adaptive.style.display="none";return;}
       adaptive.style.display="inline-block";
-      if(sessionStorage.getItem("CR01_FULLSCREEN_PREFERENCE")==="adaptive"){message.textContent="Controllo superato. È stata mantenuta la modalità adattiva scelta in precedenza.";primary.textContent="CONTINUA →";adaptive.style.display="none";}
+      if(getPreference()==="adaptive"){message.textContent="Controllo superato. È stata mantenuta la modalità adattiva scelta in precedenza.";primary.textContent="CONTINUA →";adaptive.style.display="none";}
       else if(s.fullscreen_attivo){message.textContent="Controllo superato. Lo schermo intero è attivo. Puoi iniziare la prova.";primary.textContent="INIZIA →";adaptive.style.display="none";}
       else if(isIOS()){message.textContent="Controllo preliminare superato. Su questo dispositivo il browser può limitare lo schermo intero: la prova si adatterà all'area disponibile.";primary.textContent="CONTINUA →";adaptive.style.display="none";}
       else if(supportsFullscreen()){message.textContent="Controllo preliminare superato. Puoi attivare lo schermo intero oppure continuare nella visualizzazione adattiva. La modalità adattiva non modifica gli stimoli.";primary.textContent="ATTIVA SCHERMO INTERO";adaptive.textContent="CONTINUA IN MODALITÀ ADATTIVA";}
@@ -106,14 +106,14 @@
       const actualMode=mode||(s.fullscreen_attivo?"FULLSCREEN":"ADATTIVA");
       if(data.fullscreen_attivo_all_avvio===undefined) data.fullscreen_attivo_all_avvio=s.fullscreen_attivo;
       if(data.modalita_visualizzazione==="FULLSCREEN_DISPONIBILE" || data.modalita_visualizzazione==="ADATTIVA_IOS" || !data.modalita_visualizzazione) data.modalita_visualizzazione=actualMode;
-      const preference=sessionStorage.getItem("CR01_FULLSCREEN_PREFERENCE");
+      const preference=getPreference();
       if(!preference) savePreference(actualMode==="FULLSCREEN"?"fullscreen":"adaptive");
       else if(preference==="fullscreen" && actualMode!=="FULLSCREEN") savePreference("adaptive");
       data.ultimo_controllo_il=new Date().toISOString(); write(CONDITIONS_KEY,data);
       recordEvent("AVVIO_COMPITO","Modalità: "+actualMode);
       overlay.remove(); if(typeof onReady==="function") onReady(actualMode);
     }
-    const savedPreference=sessionStorage.getItem("CR01_FULLSCREEN_PREFERENCE");
+    const savedPreference=getPreference();
     if(dimensionsOK() && savedPreference) {
       if(savedPreference==="adaptive" || isIOS() || !supportsFullscreen()) { finish("ADATTIVA"); return; }
       if(isFullscreen()) { finish("FULLSCREEN"); return; }
@@ -127,7 +127,7 @@
     }
     primary.addEventListener("click",async()=>{
       if(!dimensionsOK()){refresh();return;}
-      if(sessionStorage.getItem("CR01_FULLSCREEN_PREFERENCE")!=="adaptive" && supportsFullscreen()&&!isFullscreen()&&!isIOS()){
+      if(getPreference()!=="adaptive" && supportsFullscreen()&&!isFullscreen()&&!isIOS()){
         primary.disabled=true;primary.textContent="ATTENDI…";
         try{
           const activated=await requestFullscreen();
