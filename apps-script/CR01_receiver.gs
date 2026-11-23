@@ -3,9 +3,9 @@
  * Da aggiungere al progetto Apps Script "CR-01 – Sistema di raccolta".
  * Non sostituisce setupArchivioCR01() e non accede al vecchio archivio.
  *
- * Dopo aver incollato: salva, esegui setupArchivioCR01() (se già eseguito,
- * la funzione verifica/integra le intestazioni senza cancellare le righe),
- * quindi distribuisci come Web App.
+ * Dopo aver aggiornato il progetto Apps Script: salva ed esegui una volta
+ * preparaRicevitoreCR01(), che crea/verifica i fogli e le intestazioni senza
+ * cancellare le righe esistenti; quindi aggiorna il deployment della Web App.
  */
 
 const CR01_RECEIVER_SPREADSHEET_ID = "1qxPdQZMr1lTweLO7QkMeTGWW2h5DkaJ1xjXeJyi3Szk";
