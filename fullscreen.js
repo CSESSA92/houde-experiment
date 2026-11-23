@@ -93,7 +93,8 @@
       status.textContent="Dispositivo: "+s.tipo_dispositivo.toLowerCase()+" · Area disponibile: "+s.viewport_larghezza+" × "+s.viewport_altezza+" px · Orientamento: "+s.orientamento.toLowerCase()+".";
       if(!ok){message.textContent="L'area di visualizzazione è troppo ridotta per avviare la prova (minimo 320 × 300 px). Ingrandisci la finestra o modifica l'orientamento, quindi riprova.";primary.textContent="RICONTROLLA";adaptive.style.display="none";return;}
       adaptive.style.display="inline-block";
-      if(s.fullscreen_attivo){message.textContent="Controllo superato. Lo schermo intero è attivo. Puoi iniziare la prova.";primary.textContent="INIZIA →";adaptive.style.display="none";}
+      if(sessionStorage.getItem("CR01_FULLSCREEN_PREFERENCE")==="adaptive"){message.textContent="Controllo superato. È stata mantenuta la modalità adattiva scelta in precedenza.";primary.textContent="CONTINUA →";adaptive.style.display="none";}
+      else if(s.fullscreen_attivo){message.textContent="Controllo superato. Lo schermo intero è attivo. Puoi iniziare la prova.";primary.textContent="INIZIA →";adaptive.style.display="none";}
       else if(isIOS()){message.textContent="Controllo preliminare superato. Su questo dispositivo il browser può limitare lo schermo intero: la prova si adatterà all'area disponibile.";primary.textContent="CONTINUA →";adaptive.style.display="none";}
       else if(supportsFullscreen()){message.textContent="Controllo preliminare superato. Puoi attivare lo schermo intero oppure continuare nella visualizzazione adattiva. La modalità adattiva non modifica gli stimoli.";primary.textContent="ATTIVA SCHERMO INTERO";adaptive.textContent="CONTINUA IN MODALITÀ ADATTIVA";}
       else{message.textContent="Controllo preliminare superato. Il browser non supporta lo schermo intero: la prova si adatterà all'area disponibile.";primary.textContent="CONTINUA →";adaptive.style.display="none";}
@@ -124,7 +125,7 @@
     }
     primary.addEventListener("click",async()=>{
       if(!dimensionsOK()){refresh();return;}
-      if(supportsFullscreen()&&!isFullscreen()&&!isIOS()){
+      if(sessionStorage.getItem("CR01_FULLSCREEN_PREFERENCE")!=="adaptive" && supportsFullscreen()&&!isFullscreen()&&!isIOS()){
         primary.disabled=true;primary.textContent="ATTENDI…";
         try{
           const activated=await requestFullscreen();
