@@ -6,7 +6,7 @@
   let currentTask = "NON_DEFINITO", monitoringStarted = false, resizeTimer = null;
   function read(key, fallback) { try { return JSON.parse(sessionStorage.getItem(key) || "null") || fallback; } catch (_) { return fallback; } }
   function write(key, value) { try { sessionStorage.setItem(key, JSON.stringify(value)); } catch (_) {} }
-  function getPreference() { try { return getPreference(); } catch (_) { return null; } }
+  function getPreference() { try { return sessionStorage.getItem("CR01_FULLSCREEN_PREFERENCE"); } catch (_) { return null; } }
   function savePreference(value) { try { sessionStorage.setItem("CR01_FULLSCREEN_PREFERENCE", value); } catch (_) {} }
   function isIOS() { return /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); }
   function supportsFullscreen() { const e=document.documentElement; return Boolean(e.requestFullscreen || e.webkitRequestFullscreen); }
