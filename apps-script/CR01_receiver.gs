@@ -75,7 +75,8 @@ function doGet(e) {
   const action = p.action || "";
   if (action === "nuovoPartecipante") return cr01ReceiverNewParticipant_(p);
   if (action === "verificaInvio") return cr01ReceiverVerify_(p);
-  return cr01ReceiverJson_({success:true,service:"CR-01",version:"1.0"});
+  if (action === "stato") return cr01ReceiverJson_({success:true,service:"CR-01",version:"1.1",capabilities:["restituzione_formativa","almost_elapsed_ms","vpt_timestamps"]},p.callback||"");
+  return cr01ReceiverJson_({success:true,service:"CR-01",version:"1.1",capabilities:["restituzione_formativa","almost_elapsed_ms","vpt_timestamps"]},p.callback||"");
 }
 function cr01ReceiverNewParticipant_(p) {
   const callback = p.callback || "";
