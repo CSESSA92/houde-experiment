@@ -67,7 +67,7 @@ const sessionId=sessionStorage.getItem("session")||"";
 const profile=JSON.parse(sessionStorage.getItem("participantProfile")||"null");
 const order=sessionStorage.getItem("taskOrder")||"houde_first";
 document.getElementById("participantLine").textContent=participant?"CODICE PARTECIPANTE: "+participant:"CODICE PARTECIPANTE NON DISPONIBILE";
-let player=null,playerReady=false,playerInitializing=false,started=false,readyToStart=false,ended=false,startPerf=0,startWall="",presses=[],pauseAttempts=0,seekAnomalies=0,lastObservedTime=0,lastObservedPerf=0,monitorTimer=null,loadWarningTimer=null;
+let player=null,playerReady=false,playerInitializing=false,started=false,readyToStart=false,ended=false,startPerf=0,startWall="",presses=[],pauseAttempts=0,seekAnomalies=0,lastObservedTime=0,lastObservedPerf=0,monitorTimer=null,loadWarningTimer=null,apiRetryLoading=false;
 if(!participant||!profile){document.getElementById("instructions").innerHTML='<div class="notice">Profilo partecipante non trovato. Torna alla pagina iniziale e completa l\'accesso.</div><div class="actions"><button onclick="location.href=\'index.html\'">TORNA ALL’ACCESSO</button></div>';}
 function setVideoLoadStatus(message){
  document.getElementById("videoLoadStatus").textContent=message;
@@ -82,7 +82,18 @@ function setVideoLoadWarning(){
 function initializeYouTubePlayer(){
  if(playerReady||playerInitializing||started)return;
  if(!window.YT||!YT.Player){
-  setVideoLoadStatus("Il collegamento al servizio video non è ancora pronto. Attendi qualche istante; se il messaggio non cambia, verifica la connessione e premi «RIPROVA CARICAMENTO».");
+  setVideoLoadStatus("Il collegamento al servizio video non è ancora pronto. Stiamo tentando nuovamente il collegamento; attendi qualche istante.");
+  if(!apiRetryLoading){
+   apiRetryLoading=true;
+   const retryScript=document.createElement("script");
+   retryScript.src="https://www.youtube.com/iframe_api";
+   retryScript.onerror=()=>{
+    apiRetryLoading=false;
+    setVideoLoadStatus("Non è stato possibile raggiungere il servizio video. Verifica la connessione e premi «RIPROVA CARICAMENTO».");
+    const button=document.getElementById("startVideo");button.disabled=false;button.textContent="RIPROVA CARICAMENTO";
+   };
+   document.head.appendChild(retryScript);
+  }
   return;
  }
  playerInitializing=true;
