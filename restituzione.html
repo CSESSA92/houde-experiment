@@ -126,6 +126,18 @@ function choose(selectedIndex){
  feedback.innerHTML="<span class='tag'>"+(selected[1]?"OSSERVAZIONE RICONOSCIUTA":"PROVIAMO A DISTINGUERE")+"</span><br>"+s.why;
  next.disabled=false;[...choices.querySelectorAll("button.choice")].forEach(b=>b.disabled=true);
 }
+async function getReceiverStatus(){
+ return await new Promise(resolve=>{
+  const callbackName="cr01StatusFeedback_"+Date.now()+"_"+Math.random().toString(36).slice(2);
+  const script=document.createElement("script");let settled=false;
+  const finish=value=>{if(settled)return;settled=true;clearTimeout(timer);delete window[callbackName];script.remove();resolve(value);};
+  window[callbackName]=result=>finish(result&&result.success?result:null);
+  script.onerror=()=>finish(null);
+  script.src=APP_URL+"?action=stato&callback="+callbackName+"&t="+Date.now();
+  const timer=setTimeout(()=>finish(null),3500);document.body.appendChild(script);
+ });
+}
+
 async function verifySubmission(submissionId){
  return await new Promise(resolve=>{
   const callbackName="cr01VerifyFeedback_"+Date.now()+"_"+Math.random().toString(36).slice(2);
@@ -142,6 +154,11 @@ async function uploadRows(){
  if(!participant||!sessionId){archiveStatus.textContent="ID partecipante o sessione non disponibile. Le risposte restano conservate su questo dispositivo: scarica la copia CSV e avvisa il ricercatore.";return false;}
  retryUpload.disabled=true;retryUpload.textContent="INVIO IN CORSO…";
  archiveStatus.textContent="Invio delle tre risposte all'archivio. Non chiudere questa pagina.";
+ const serverStatus=await getReceiverStatus();
+ if(!serverStatus||!Array.isArray(serverStatus.capabilities)||!serverStatus.capabilities.includes("restituzione_formativa")){
+  archiveStatus.textContent="Il ricevitore Google Apps Script non risulta aggiornato per archiviare la restituzione formativa. Le risposte restano salvate su questo dispositivo. Il ricercatore deve aggiornare il ricevitore e il deployment prima di riprovare.";
+  retryUpload.textContent="RIPROVA DOPO L'AGGIORNAMENTO";retryUpload.disabled=false;return false;
+ }
  const submissionId="FEEDBACK_"+participant+"_"+sessionId;
  const payload={submission_id:submissionId,participant_id:participant,session:{session_id:sessionId},restituzione_formativa:rows};
  let frame=null,form=null;
