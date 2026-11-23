@@ -22,7 +22,7 @@ const CR01_RECEIVER_HEADERS = {
   HOUDE_PROVE: ["ID_PARTECIPANTE","ID_SESSIONE","NUMERO_PROVA","STIMOLO","RISPOSTA","RISPOSTA_CORRETTA","ACCURATEZZA","TEMPO_RISPOSTA_MS","TIMESTAMP"],
   STROOP_PROVE: ["ID_PARTECIPANTE","ID_SESSIONE","NUMERO_PROVA","CONDIZIONE","STIMOLO","RISPOSTA","ACCURATEZZA","TEMPO_RISPOSTA_MS","TIMESTAMP"],
   VPT_PROVE: ["ID_PARTECIPANTE","ID_SESSIONE","NUMERO_PROVA","SESSIONE_VPT","STIMOLO","RISPOSTA","ACCURATEZZA","TEMPO_RISPOSTA_MS","TIMEOUT","ORIENTAMENTO","INTERRUZIONE_ORIENTAMENTO","TIMESTAMP"],
-  ALMOST_EVENTI: ["ID_PARTECIPANTE","ID_SESSIONE","NUMERO_EVENTO","TEMPO_VIDEO_MS","TIMESTAMP_PRESSIONE"],
+  ALMOST_EVENTI: ["ID_PARTECIPANTE","ID_SESSIONE","NUMERO_EVENTO","TEMPO_TRASCORSO_MS","TEMPO_VIDEO_MS","TIMESTAMP_PRESSIONE"],
   ALMOST_RIEPILOGO: ["ID_PARTECIPANTE","ID_SESSIONE","DURATA_VIDEO_MS","NUMERO_PRESSIONI","PAUSE","ANOMALIE","TIMESTAMP"],
   CONDIZIONI_SOMMINISTRAZIONE: ["ID_PARTECIPANTE","ID_SESSIONE","TIPO_DISPOSITIVO","SISTEMA_OPERATIVO","BROWSER","VIEWPORT_LARGHEZZA","VIEWPORT_ALTEZZA","SCHERMO_LARGHEZZA","SCHERMO_ALTEZZA","ORIENTAMENTO_INIZIALE","FULLSCREEN_SUPPORTATO","FULLSCREEN_ATTIVO_ALL_AVVIO","MODALITA_VISUALIZZAZIONE","DATA_RILEVAZIONE","ULTIMO_CONTROLLO_IL"],
   EVENTI_TECNICI: ["ID_PARTECIPANTE","ID_SESSIONE","NUMERO_EVENTO","COMPITO","TIPO_EVENTO","TIMESTAMP","VIEWPORT_LARGHEZZA","VIEWPORT_ALTEZZA","ORIENTAMENTO","FULLSCREEN_ATTIVO","VISIBILITA_PAGINA","DETTAGLI_JSON"],
@@ -32,6 +32,12 @@ const CR01_RECEIVER_HEADERS = {
     "D1_RICONOSCIMENTO_ETICHETTAMENTO","D1_TEMPO_RISPOSTA_MS",
     "D2_SENSIBILITA_CONSEGUENZE_INCLUSIVE","D2_TEMPO_RISPOSTA_MS",
     "TIMESTAMP_D1","TIMESTAMP_D2","TIMESTAMP_COMPLETAMENTO"
+  ],
+  RESTITUZIONE_FORMATIVA: [
+    "ID_PARTECIPANTE","ID_SESSIONE","NUMERO_ESERCIZIO","ID_SCENARIO","TITOLO_SCENARIO",
+    "TESTO_SCENARIO","DOMANDA","OPZIONE_1","OPZIONE_2","OPZIONE_3",
+    "INDICE_RISPOSTA_SELEZIONATA","RISPOSTA_SELEZIONATA","CORRETTA",
+    "TEMPO_RISPOSTA_MS","INIZIO_ESERCIZIO","TIMESTAMP_RISPOSTA"
   ]
 };
 
@@ -156,6 +162,7 @@ function cr01ReceiverSave_(d) {
     if (d.conditions) cr01ReceiverSaveConditions_(participant,d.session && d.session.session_id,d.conditions);
     cr01ReceiverSaveTechnicalEvents_(participant,d.session && d.session.session_id,d.technical_events || []);
     cr01ReceiverSaveGiudizio_(participant,d.giudizio || []);
+    cr01ReceiverSaveRestituzione_(participant,d.restituzione_formativa || []);
     log.appendRow([submissionId,participant,d.profile?"PROFILE":"SESSION_DATA",new Date()]);
     return {success:true,submission_id:submissionId};
   } finally { lock.releaseLock(); }
@@ -228,7 +235,7 @@ function cr01ReceiverSaveAlmost_(id,a) {
   const presses=Array.isArray(a.presses)?a.presses:[];
   cr01ReceiverAppendByHeader_("ALMOST_EVENTI",presses.map((r,i)=>({
     ID_PARTECIPANTE:id,ID_SESSIONE:id+"-main",NUMERO_EVENTO:r.event_number||i+1,
-    TEMPO_VIDEO_MS:Math.round(Number(r.video_time_s||0)*1000),TIMESTAMP_PRESSIONE:r.wall_time||""
+    TEMPO_TRASCORSO_MS:r.elapsed_ms||"",TEMPO_VIDEO_MS:Math.round(Number(r.video_time_s||0)*1000),TIMESTAMP_PRESSIONE:r.wall_time||""
   })));
   cr01ReceiverAppendByHeader_("ALMOST_RIEPILOGO",[{
     ID_PARTECIPANTE:id,ID_SESSIONE:id+"-main",DURATA_VIDEO_MS:Math.round(Number(a.video_duration_s||0)*1000),
@@ -272,6 +279,20 @@ function cr01ReceiverSaveGiudizio_(id,rows) {
     TIMESTAMP_COMPLETAMENTO:r.completed_at||""
   })));
 }
+function cr01ReceiverSaveRestituzione_(id,rows) {
+  if (!Array.isArray(rows) || !rows.length) return;
+  if (rows.length !== 3) throw new Error("La restituzione formativa deve contenere tre risposte complete.");
+  cr01ReceiverAppendByHeader_("RESTITUZIONE_FORMATIVA",rows.map((r,i)=>({
+    ID_PARTECIPANTE:id,ID_SESSIONE:id+"-"+(r.session_id||"main"),NUMERO_ESERCIZIO:r.order||i+1,
+    ID_SCENARIO:r.scenario_id||"",TITOLO_SCENARIO:r.scenario_title||"",
+    TESTO_SCENARIO:r.scenario_text||"",DOMANDA:r.question||"",
+    OPZIONE_1:r.options&&r.options[0]||"",OPZIONE_2:r.options&&r.options[1]||"",OPZIONE_3:r.options&&r.options[2]||"",
+    INDICE_RISPOSTA_SELEZIONATA:r.selected_option_index||"",RISPOSTA_SELEZIONATA:r.selected_option||"",
+    CORRETTA:r.correct===true?1:0,TEMPO_RISPOSTA_MS:r.response_time_ms||"",
+    INIZIO_ESERCIZIO:r.started_at||"",TIMESTAMP_RISPOSTA:r.answered_at||""
+  })));
+}
+
 function cr01ReceiverVerify_(p) {
   const callback=p.callback||"",submission=String(p.submission_id||"");
   const sh=cr01ReceiverBook_().getSheetByName("_RICEZIONI_CR01");
