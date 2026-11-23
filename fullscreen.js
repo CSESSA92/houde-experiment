@@ -50,7 +50,7 @@
       rilevato_il:new Date().toISOString()
     };
   }
-  function captureInitialConditions() { const old=read(CONDITIONS_KEY,null); if(old) return old; const data=snapshot(); write(CONDITIONS_KEY,data); return data; }
+  function captureInitialConditions() { const old=read(CONDITIONS_KEY,null); if(old) return old; const data=snapshot(); data.fullscreen_attivo_all_avvio=data.fullscreen_attivo; write(CONDITIONS_KEY,data); return data; }
   function recordEvent(type, details) {
     const events=read(EVENTS_KEY,[]), s=snapshot();
     events.push({compito:currentTask,tipo_evento:type,timestamp:new Date().toISOString(),
