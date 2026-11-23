@@ -87,6 +87,7 @@ button{min-height:44px;touch-action:manipulation}
 </section>
 </main>
 <footer><span>CR—01 / COGNITIVE RESEARCH</span><span>COMPITO COLORE-PAROLA · VERSIONE DIGITALE SPERIMENTALE</span></footer>
+<script src="fullscreen.js"></script>
 <script src="sequenza-compiti.js"></script>
 <script>
 const participant=sessionStorage.getItem("participant")||"";
@@ -177,7 +178,7 @@ function finish(){
  document.getElementById("summary").textContent="Prove sperimentali: "+rows.length+" · Accuratezza: "+acc+"% · Codice partecipante: "+participant+". Adattamento digitale esplorativo: non equivale a una versione standardizzata del test Stroop.";
  localStorage.setItem("CR01_"+participant+"_"+sessionId+"_STROOP",JSON.stringify({participant_id:participant,session_id:sessionId,profile,task:"digital_color_word_interference",results:rows}));
 }
-document.getElementById("begin").addEventListener("click",start);
+document.getElementById("begin").addEventListener("click",()=>CR01Display.createGate(start,{task:"STROOP"}));
 document.getElementById("download").addEventListener("click",()=>{
  const cols=Object.keys(rows[0]||{}),q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
  const csv=[cols.map(q).join(","),...rows.map(r=>cols.map(k=>q(r[k])).join(","))].join("\r\n");
