@@ -6,6 +6,8 @@
   let currentTask = "NON_DEFINITO", monitoringStarted = false, resizeTimer = null;
   function read(key, fallback) { try { return JSON.parse(sessionStorage.getItem(key) || "null") || fallback; } catch (_) { return fallback; } }
   function write(key, value) { try { sessionStorage.setItem(key, JSON.stringify(value)); } catch (_) {} }
+  function getPreference() { try { return getPreference(); } catch (_) { return null; } }
+  function savePreference(value) { try { sessionStorage.setItem("CR01_FULLSCREEN_PREFERENCE", value); } catch (_) {} }
   function isIOS() { return /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); }
   function supportsFullscreen() { const e=document.documentElement; return Boolean(e.requestFullscreen || e.webkitRequestFullscreen); }
   function isFullscreen() { return Boolean(document.fullscreenElement || document.webkitFullscreenElement); }
@@ -105,8 +107,8 @@
       if(data.fullscreen_attivo_all_avvio===undefined) data.fullscreen_attivo_all_avvio=s.fullscreen_attivo;
       if(data.modalita_visualizzazione==="FULLSCREEN_DISPONIBILE" || data.modalita_visualizzazione==="ADATTIVA_IOS" || !data.modalita_visualizzazione) data.modalita_visualizzazione=actualMode;
       const preference=sessionStorage.getItem("CR01_FULLSCREEN_PREFERENCE");
-      if(!preference) sessionStorage.setItem("CR01_FULLSCREEN_PREFERENCE",actualMode==="FULLSCREEN"?"fullscreen":"adaptive");
-      else if(preference==="fullscreen" && actualMode!=="FULLSCREEN") sessionStorage.setItem("CR01_FULLSCREEN_PREFERENCE","adaptive");
+      if(!preference) savePreference(actualMode==="FULLSCREEN"?"fullscreen":"adaptive");
+      else if(preference==="fullscreen" && actualMode!=="FULLSCREEN") savePreference("adaptive");
       data.ultimo_controllo_il=new Date().toISOString(); write(CONDITIONS_KEY,data);
       recordEvent("AVVIO_COMPITO","Modalità: "+actualMode);
       overlay.remove(); if(typeof onReady==="function") onReady(actualMode);
