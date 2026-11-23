@@ -83,29 +83,105 @@ footer{border-top:1px solid var(--line);padding:24px 6%;font-size:9px;letter-spa
 <p>La sospensione del giudizio non significa rinviare ogni decisione o rinunciare alla responsabilità educativa. Significa evitare che una prima impressione diventi, senza verifica, una descrizione definitiva dell'alunno.</p>
 <p><strong>Il punto di partenza non è giudicare meno, ma giudicare meglio.</strong></p>
 <p class="lead" role="status"><strong>SESSIONE COMPLETATA</strong><br>Grazie per aver partecipato. Le attività sono terminate.</p>
+<p id="archiveStatus" class="note" role="status">Le risposte sono state conservate su questo dispositivo. Verifica dell'archivio in corso.</p>
+<div class="actions"><button class="primary" id="retryUpload" type="button">RIPROVA INVIO ALL'ARCHIVIO</button><button class="secondary" id="downloadFeedback" type="button">SCARICA COPIA CSV ↓</button></div>
 </section>
 </main>
-<footer>CR—01 / RESTITUZIONE FORMATIVA · LE RISPOSTE NON VENGONO REGISTRATE</footer>
+<footer>CR—01 / RESTITUZIONE FORMATIVA · RISPOSTE REGISTRATE SEPARATAMENTE</footer>
 <script>
+const participant=sessionStorage.getItem("participant")||localStorage.getItem("participant")||"";
+const sessionId=sessionStorage.getItem("session")||localStorage.getItem("session")||"";
+const RECORD_KEY="CR01_"+participant+"_"+sessionId+"_RESTITUZIONE";
+const APP_URL="https://script.google.com/macros/s/AKfycbyU_0KhxcYNrwx3skqGeNDjTiDxH6ta9YY72l54EKgL568FiAUKuCGLaT3QdV2gM3Cq/exec";
 const scenarios=[
- {title:"Una mancata partecipazione",text:"Durante una discussione collettiva, un'alunna non interviene e rimane in silenzio per tutta l'attività.",question:"Quale frase descrive più direttamente ciò che è osservabile?",choices:[["È poco interessata alla lezione",false],["Durante l'attività non è intervenuta verbalmente",true],["Non si sente capace di partecipare",false]],why:"La seconda frase descrive un comportamento verificabile. Le altre due attribuiscono rispettivamente uno stato di interesse e una possibile percezione di sé: potrebbero essere ipotesi, ma non sono direttamente osservabili."},
- {title:"Un compito non completato",text:"Al termine dell'attività, un alunno ha svolto soltanto due dei cinque esercizi assegnati.",question:"Quale conclusione è più prudente formulare sulla base delle sole informazioni disponibili?",choices:[["È svogliato e non si impegna",false],["Non ha ancora completato tutti gli esercizi",true],["Non è in grado di affrontare il compito",false]],why:"Sappiamo che due esercizi sono stati svolti e tre no. Non sappiamo ancora perché. Mancanza di impegno e difficoltà di comprensione sono spiegazioni possibili, ma richiedono ulteriori elementi."},
- {title:"Una reazione durante la lezione",text:"Quando l'insegnante gli chiede di correggere un esercizio, uno studente abbassa lo sguardo, spinge il quaderno e non risponde.",question:"Quale passaggio può aiutare a evitare un'attribuzione affrettata?",choices:[["Concludere che è oppositivo",false],["Considerare il gesto come prova certa di rabbia",false],["Descrivere i gesti e chiedersi quali informazioni mancano",true]],why:"Descrivere i gesti mantiene distinto il dato dall'interpretazione. Rabbia, opposizione, imbarazzo o difficoltà sono ipotesi diverse: per comprenderle occorre raccogliere altre informazioni, anche attraverso un confronto rispettoso con lo studente."}
+ {id:"R01",title:"Una mancata partecipazione",text:"Durante una discussione collettiva, un'alunna non interviene e rimane in silenzio per tutta l'attività.",question:"Quale frase descrive più direttamente ciò che è osservabile?",choices:[["È poco interessata alla lezione",false],["Durante l'attività non è intervenuta verbalmente",true],["Non si sente capace di partecipare",false]],why:"La seconda frase descrive un comportamento verificabile. Le altre due attribuiscono rispettivamente uno stato di interesse e una possibile percezione di sé: potrebbero essere ipotesi, ma non sono direttamente osservabili."},
+ {id:"R02",title:"Un compito non completato",text:"Al termine dell'attività, un alunno ha svolto soltanto due dei cinque esercizi assegnati.",question:"Quale conclusione è più prudente formulare sulla base delle sole informazioni disponibili?",choices:[["È svogliato e non si impegna",false],["Non ha ancora completato tutti gli esercizi",true],["Non è in grado di affrontare il compito",false]],why:"Sappiamo che due esercizi sono stati svolti e tre no. Non sappiamo ancora perché. Mancanza di impegno e difficoltà di comprensione sono spiegazioni possibili, ma richiedono ulteriori elementi."},
+ {id:"R03",title:"Una reazione durante la lezione",text:"Quando l'insegnante gli chiede di correggere un esercizio, uno studente abbassa lo sguardo, spinge il quaderno e non risponde.",question:"Quale passaggio può aiutare a evitare un'attribuzione affrettata?",choices:[["Concludere che è oppositivo",false],["Considerare il gesto come prova certa di rabbia",false],["Descrivere i gesti e chiedersi quali informazioni mancano",true]],why:"Descrivere i gesti mantiene distinto il dato dall'interpretazione. Rabbia, opposizione, imbarazzo o difficoltà sono ipotesi diverse: per comprenderle occorre raccogliere altre informazioni, anche attraverso un confronto rispettoso con lo studente."}
 ];
-let current=0,answered=false;
+let rows=[];
+try{const saved=JSON.parse(localStorage.getItem(RECORD_KEY)||"null");if(saved&&saved.participant_id===participant&&saved.session_id===sessionId&&Array.isArray(saved.results))rows=saved.results;}catch(e){}
+let current=Math.min(rows.length,scenarios.length),answered=false,startedAt=0,startedWall="";
 const title=document.getElementById("scenarioTitle"),text=document.getElementById("scenarioText"),choices=document.getElementById("choices"),feedback=document.getElementById("feedback"),next=document.getElementById("next"),progress=document.getElementById("progress");
+const archiveStatus=document.getElementById("archiveStatus"),retryUpload=document.getElementById("retryUpload");
+function saveRecord(status){
+ const record={participant_id:participant,session_id:sessionId,task:"restituzione_formativa",results:rows,completed_at:rows.length===3?new Date().toISOString():"",archive_status:status||"LOCAL_ONLY"};
+ localStorage.setItem(RECORD_KEY,JSON.stringify(record));
+ return record;
+}
 function render(){
- const s=scenarios[current];answered=false;title.textContent=s.title;text.textContent=s.text;progress.textContent="SITUAZIONE "+(current+1)+" DI "+scenarios.length;feedback.className="feedback";feedback.textContent="";next.disabled=true;next.textContent=current===scenarios.length-1?"VAI ALLA RIFLESSIONE →":"PROSEGUI →";choices.innerHTML="";
- const h=document.createElement("h3");h.textContent=s.question;choices.appendChild(h);
- s.choices.forEach(([label,correct])=>{const b=document.createElement("button");b.className="choice";b.type="button";b.textContent=label;b.addEventListener("click",()=>choose(correct));choices.appendChild(b);});
+ const s=scenarios[current];answered=false;title.textContent=s.title;text.textContent=s.text;
+ progress.textContent="SITUAZIONE "+(current+1)+" DI "+scenarios.length;
+ feedback.className="feedback";feedback.textContent="";next.disabled=true;
+ next.textContent=current===scenarios.length-1?"COMPLETA LA RESTITUZIONE →":"PROSEGUI →";
+ choices.replaceChildren();const h=document.createElement("h3");h.textContent=s.question;choices.appendChild(h);
+ s.choices.forEach(([label,correct],i)=>{const b=document.createElement("button");b.className="choice";b.type="button";b.textContent=label;b.addEventListener("click",()=>choose(i));choices.appendChild(b);});
+ startedAt=performance.now();startedWall=new Date().toISOString();
 }
-function choose(correct){
- if(answered)return;answered=true;const s=scenarios[current];feedback.className="feedback show";feedback.innerHTML="<span class='tag'>"+(correct?"OSSERVAZIONE RICONOSCIUTA":"PROVIAMO A DISTINGUERE")+"</span><br>"+s.why;next.disabled=false;
- [...choices.querySelectorAll("button")].forEach(b=>b.disabled=true);
+function choose(selectedIndex){
+ if(answered)return;answered=true;const s=scenarios[current],selected=s.choices[selectedIndex];
+ const row={participant_id:participant,session_id:sessionId,order:current+1,scenario_id:s.id,scenario_title:s.title,scenario_text:s.text,question:s.question,options:s.choices.map(x=>x[0]),selected_option_index:selectedIndex+1,selected_option:selected[0],correct:selected[1],response_time_ms:Math.max(0,Math.round(performance.now()-startedAt)),started_at:startedWall,answered_at:new Date().toISOString()};
+ rows=rows.filter(r=>r.scenario_id!==s.id);rows.push(row);rows.sort((a,b)=>a.order-b.order);
+ saveRecord("LOCAL_ONLY");
+ feedback.className="feedback show";
+ feedback.innerHTML="<span class='tag'>"+(selected[1]?"OSSERVAZIONE RICONOSCIUTA":"PROVIAMO A DISTINGUERE")+"</span><br>"+s.why;
+ next.disabled=false;[...choices.querySelectorAll("button.choice")].forEach(b=>b.disabled=true);
 }
-next.addEventListener("click",()=>{if(!answered)return;if(current<scenarios.length-1){current++;render();document.getElementById("exercise").scrollIntoView({behavior:"smooth",block:"start"});}else{document.getElementById("exercise").style.display="none";document.getElementById("conclusion").classList.add("show");document.getElementById("conclusion").scrollIntoView({behavior:"smooth",block:"start"});}});
-
-render();
+async function verifySubmission(submissionId){
+ return await new Promise(resolve=>{
+  const callbackName="cr01VerifyFeedback_"+Date.now()+"_"+Math.random().toString(36).slice(2);
+  const script=document.createElement("script");let settled=false;
+  const finish=value=>{if(settled)return;settled=true;clearTimeout(timer);delete window[callbackName];script.remove();resolve(value);};
+  window[callbackName]=result=>finish(Boolean(result&&result.success));
+  script.onerror=()=>finish(false);
+  script.src=APP_URL+"?action=verificaInvio&submission_id="+encodeURIComponent(submissionId)+"&callback="+callbackName+"&t="+Date.now();
+  const timer=setTimeout(()=>finish(false),3500);document.body.appendChild(script);
+ });
+}
+async function uploadRows(){
+ if(rows.length!==3){archiveStatus.textContent="Invio non disponibile: completa prima tutte e tre le situazioni.";return false;}
+ if(!participant||!sessionId){archiveStatus.textContent="ID partecipante o sessione non disponibile. Le risposte restano conservate su questo dispositivo: scarica la copia CSV e avvisa il ricercatore.";return false;}
+ retryUpload.disabled=true;retryUpload.textContent="INVIO IN CORSO…";
+ archiveStatus.textContent="Invio delle tre risposte all'archivio. Non chiudere questa pagina.";
+ const submissionId="FEEDBACK_"+participant+"_"+sessionId;
+ const payload={submission_id:submissionId,participant_id:participant,session:{session_id:sessionId},restituzione_formativa:rows};
+ let frame=null,form=null;
+ try{
+  frame=document.createElement("iframe");frame.name="cr01FeedbackUploadFrame";frame.hidden=true;document.body.appendChild(frame);
+  form=document.createElement("form");form.method="POST";form.action=APP_URL;form.target=frame.name;form.hidden=true;
+  const input=document.createElement("input");input.type="hidden";input.name="payload";input.value=JSON.stringify(payload);form.appendChild(input);document.body.appendChild(form);form.submit();
+  let confirmed=false;
+  for(let attempt=0;attempt<15;attempt++){
+   await new Promise(resolve=>setTimeout(resolve,1000));
+   if(await verifySubmission(submissionId)){confirmed=true;break;}
+  }
+  if(!confirmed)throw new Error("Il server non ha confermato la ricezione entro il tempo previsto.");
+  saveRecord("ARCHIVED");
+  archiveStatus.textContent="Risposte registrate nell'archivio. Le tre scelte, la correttezza e i tempi di risposta sono stati inviati separatamente dai cinque compiti sperimentali.";
+  retryUpload.textContent="INVIO CONFERMATO";retryUpload.disabled=true;return true;
+ }catch(error){
+  saveRecord("LOCAL_ONLY");
+  archiveStatus.textContent="Non è stato possibile confermare l'invio: "+error.message+" Le risposte restano salvate su questo dispositivo. Puoi riprovare senza perdere le risposte.";
+  retryUpload.textContent="RIPROVA INVIO ALL'ARCHIVIO";retryUpload.disabled=false;return false;
+ }finally{if(form)form.remove();if(frame)frame.remove();}
+}
+function finish(){
+ document.getElementById("exercise").style.display="none";
+ document.getElementById("conclusion").classList.add("show");
+ document.getElementById("conclusion").scrollIntoView({behavior:"smooth",block:"start"});
+ saveRecord("LOCAL_ONLY");uploadRows();
+}
+next.addEventListener("click",()=>{if(!answered)return;if(current<scenarios.length-1){current++;render();document.getElementById("exercise").scrollIntoView({behavior:"smooth",block:"start"});}else{finish();}});
+retryUpload.addEventListener("click",uploadRows);
+document.getElementById("downloadFeedback").addEventListener("click",()=>{
+ const headers=["participant_id","session_id","order","scenario_id","scenario_title","scenario_text","question","option_1","option_2","option_3","selected_option_index","selected_option","correct","response_time_ms","started_at","answered_at"];
+ const quote=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+ const data=rows.map(r=>[r.participant_id,r.session_id,r.order,r.scenario_id,r.scenario_title,r.scenario_text,r.question,...(r.options||[]),r.selected_option_index,r.selected_option,r.correct?1:0,r.response_time_ms,r.started_at,r.answered_at]);
+ const csv=[headers.map(quote).join(","),...data.map(row=>headers.map((_,i)=>quote(row[i])).join(","))].join("\r\n");
+ const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="CR01_"+(participant||"ID_NON_DISPONIBILE")+"_RESTITUZIONE_FORMATIVA.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+});
+if(rows.length>=scenarios.length){finish();}
+else{render();}
 </script>
 </body>
 </html>
