@@ -26,6 +26,8 @@ const order=sessionStorage.getItem("taskOrder")||"";
 const orderAssignedAt=sessionStorage.getItem("taskOrderAssignedAt")||"";
 const blockOrder=sessionStorage.getItem("taskBlockOrder")||"";
 const blockOrderAssignedAt=sessionStorage.getItem("taskBlockOrderAssignedAt")||"";
+const conditions=(()=>{try{return JSON.parse(sessionStorage.getItem("CR01_CONDIZIONI_SOMMINISTRAZIONE")||"null")}catch(e){return null}})();
+const technicalEvents=(()=>{try{return JSON.parse(sessionStorage.getItem("CR01_EVENTI_TECNICI")||"[]")}catch(e){return []}})();
 const load=suffix=>{try{return JSON.parse(localStorage.getItem("CR01_"+participant+"_"+session+"_"+suffix)||"null")}catch(e){return null}};
 const houde=participant&&session?load("HOUDE"):null,stroop=participant&&session?load("STROOP"):null,almost=participant&&session?load("ALMOST"):null,vpt=participant&&session?load("VPT"):null,giudizio=participant&&session?load("GIUDIZIO"):null;
 document.getElementById("pid").textContent=participant||"Non disponibile";
@@ -63,6 +65,8 @@ document.getElementById("send").addEventListener("click", async ()=>{
   submission_id:"FINAL_"+participant+"_"+(session||"main"),
   participant_id:participant,
   profile:profile,
+  conditions:conditions,
+  technical_events:technicalEvents,
   session:{
    session_id:session,
    task_order:order,
@@ -124,6 +128,8 @@ document.getElementById("export").addEventListener("click",()=>{
  const sessionRows=[{participant_id:participant,session,task_order_assigned:order,task_order_assigned_at:orderAssignedAt,task_block_order:blockOrder,task_block_order_assigned_at:blockOrderAssignedAt,exported_at:new Date().toISOString(),houde_present:checks.houde,stroop_present:checks.stroop,almost_present:checks.almost,vpt_present:checks.vpt,giudizio_present:checks.giudizio}];
  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sessionRows),"Sessione");
  const addRows=(name,rows)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows&&rows.length?rows:[{informazione:"Nessun dato registrato"}]),name);
+ addRows("Condizioni_somministrazione",conditions?[conditions]:null);
+ addRows("Eventi_tecnici",technicalEvents);
  addRows("Sillogismi",houde&&houde.results);
  addRows("Stroop",stroop&&stroop.results);
  addRows("VPT",vpt&&vpt.results);
