@@ -100,13 +100,27 @@
     }
     function finish(mode){
       const s=snapshot(),data=read(CONDITIONS_KEY,{});
+      const actualMode=mode||(s.fullscreen_attivo?"FULLSCREEN":"ADATTIVA");
       if(data.fullscreen_attivo_all_avvio===undefined) data.fullscreen_attivo_all_avvio=s.fullscreen_attivo;
-      if(data.modalita_visualizzazione==="FULLSCREEN_DISPONIBILE" || data.modalita_visualizzazione==="ADATTIVA_IOS" || !data.modalita_visualizzazione) {
-        data.modalita_visualizzazione=mode||(s.fullscreen_attivo?"FULLSCREEN":"ADATTIVA");
-      }
+      if(data.modalita_visualizzazione==="FULLSCREEN_DISPONIBILE" || data.modalita_visualizzazione==="ADATTIVA_IOS" || !data.modalita_visualizzazione) data.modalita_visualizzazione=actualMode;
+      const preference=sessionStorage.getItem("CR01_FULLSCREEN_PREFERENCE");
+      if(!preference) sessionStorage.setItem("CR01_FULLSCREEN_PREFERENCE",actualMode==="FULLSCREEN"?"fullscreen":"adaptive");
+      else if(preference==="fullscreen" && actualMode!=="FULLSCREEN") sessionStorage.setItem("CR01_FULLSCREEN_PREFERENCE","adaptive");
       data.ultimo_controllo_il=new Date().toISOString(); write(CONDITIONS_KEY,data);
-      recordEvent("AVVIO_COMPITO","Modalità: "+data.modalita_visualizzazione);
-      overlay.remove(); if(typeof onReady==="function") onReady(data.modalita_visualizzazione);
+      recordEvent("AVVIO_COMPITO","Modalità: "+actualMode);
+      overlay.remove(); if(typeof onReady==="function") onReady(actualMode);
+    }
+    const savedPreference=sessionStorage.getItem("CR01_FULLSCREEN_PREFERENCE");
+    if(dimensionsOK() && savedPreference) {
+      if(savedPreference==="adaptive" || isIOS() || !supportsFullscreen()) { finish("ADATTIVA"); return; }
+      if(isFullscreen()) { finish("FULLSCREEN"); return; }
+      requestFullscreen().then(activated=>{
+        if(activated) finish("FULLSCREEN");
+        else { recordEvent("FULLSCREEN_NON_ATTIVATO","Fallback automatico in modalità adattiva"); finish("ADATTIVA"); }
+      }).catch(()=>{
+        recordEvent("FULLSCREEN_NON_ATTIVATO","Fallback automatico in modalità adattiva"); finish("ADATTIVA");
+      });
+      return;
     }
     primary.addEventListener("click",async()=>{
       if(!dimensionsOK()){refresh();return;}
