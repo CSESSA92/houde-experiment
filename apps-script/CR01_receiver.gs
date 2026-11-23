@@ -24,6 +24,8 @@ const CR01_RECEIVER_HEADERS = {
   VPT_PROVE: ["ID_PARTECIPANTE","ID_SESSIONE","NUMERO_PROVA","SESSIONE_VPT","STIMOLO","RISPOSTA","ACCURATEZZA","TEMPO_RISPOSTA_MS","TIMEOUT","ORIENTAMENTO","INTERRUZIONE_ORIENTAMENTO","TIMESTAMP"],
   ALMOST_EVENTI: ["ID_PARTECIPANTE","ID_SESSIONE","NUMERO_EVENTO","TEMPO_VIDEO_MS","TIMESTAMP_PRESSIONE"],
   ALMOST_RIEPILOGO: ["ID_PARTECIPANTE","ID_SESSIONE","DURATA_VIDEO_MS","NUMERO_PRESSIONI","PAUSE","ANOMALIE","TIMESTAMP"],
+  CONDIZIONI_SOMMINISTRAZIONE: ["ID_PARTECIPANTE","ID_SESSIONE","TIPO_DISPOSITIVO","SISTEMA_OPERATIVO","BROWSER","VIEWPORT_LARGHEZZA","VIEWPORT_ALTEZZA","SCHERMO_LARGHEZZA","SCHERMO_ALTEZZA","ORIENTAMENTO_INIZIALE","FULLSCREEN_SUPPORTATO","FULLSCREEN_ATTIVO_ALL_AVVIO","MODALITA_VISUALIZZAZIONE","DATA_RILEVAZIONE","ULTIMO_CONTROLLO_IL"],
+  EVENTI_TECNICI: ["ID_PARTECIPANTE","ID_SESSIONE","NUMERO_EVENTO","COMPITO","TIPO_EVENTO","TIMESTAMP","VIEWPORT_LARGHEZZA","VIEWPORT_ALTEZZA","ORIENTAMENTO","FULLSCREEN_ATTIVO","VISIBILITA_PAGINA","DETTAGLI_JSON"],
   GIUDIZIO_PROVE: [
     "ID_PARTECIPANTE","ID_SESSIONE","NUMERO_PROVA","ID_STIMOLO",
     "DIMENSIONE_TEORICA","TESTO_STIMOLO","ORDINE_PRESENTAZIONE",
@@ -151,6 +153,8 @@ function cr01ReceiverSave_(d) {
     cr01ReceiverSaveStroop_(participant,d.stroop || []);
     cr01ReceiverSaveVpt_(participant,d.vpt || []);
     if (d.almost) cr01ReceiverSaveAlmost_(participant,d.almost);
+    if (d.conditions) cr01ReceiverSaveConditions_(participant,d.session && d.session.session_id,d.conditions);
+    cr01ReceiverSaveTechnicalEvents_(participant,d.session && d.session.session_id,d.technical_events || []);
     cr01ReceiverSaveGiudizio_(participant,d.giudizio || []);
     log.appendRow([submissionId,participant,d.profile?"PROFILE":"SESSION_DATA",new Date()]);
     return {success:true,submission_id:submissionId};
@@ -231,6 +235,29 @@ function cr01ReceiverSaveAlmost_(id,a) {
     NUMERO_PRESSIONI:a.press_count||presses.length,PAUSE:a.pause_attempts||0,
     ANOMALIE:a.seek_anomalies||0,TIMESTAMP:a.completed_at||""
   }]);
+}
+function cr01ReceiverSaveConditions_(id,sessionId,c) {
+  const row = {
+    ID_PARTECIPANTE:id, ID_SESSIONE:id+"-"+(sessionId||"main"),
+    TIPO_DISPOSITIVO:c.tipo_dispositivo||"", SISTEMA_OPERATIVO:c.sistema_operativo||"",
+    BROWSER:c.browser||"", VIEWPORT_LARGHEZZA:c.viewport_larghezza||"",
+    VIEWPORT_ALTEZZA:c.viewport_altezza||"", SCHERMO_LARGHEZZA:c.schermo_larghezza||"",
+    SCHERMO_ALTEZZA:c.schermo_altezza||"", ORIENTAMENTO_INIZIALE:c.orientamento||"",
+    FULLSCREEN_SUPPORTATO:c.fullscreen_supportato===true?"SI":c.fullscreen_supportato===false?"NO":"",
+    FULLSCREEN_ATTIVO_ALL_AVVIO:c.fullscreen_attivo_all_avvio===true?"SI":c.fullscreen_attivo_all_avvio===false?"NO":"",
+    MODALITA_VISUALIZZAZIONE:c.modalita_visualizzazione||"",
+    DATA_RILEVAZIONE:c.rilevato_il||"", ULTIMO_CONTROLLO_IL:c.ultimo_controllo_il||""
+  };
+  cr01ReceiverAppendByHeader_("CONDIZIONI_SOMMINISTRAZIONE",[row]);
+}
+function cr01ReceiverSaveTechnicalEvents_(id,sessionId,events) {
+  cr01ReceiverAppendByHeader_("EVENTI_TECNICI",(events||[]).map((e,i)=>({
+    ID_PARTECIPANTE:id, ID_SESSIONE:id+"-"+(sessionId||"main"), NUMERO_EVENTO:i+1,
+    COMPITO:e.compito||"", TIPO_EVENTO:e.tipo_evento||"", TIMESTAMP:e.timestamp||"",
+    VIEWPORT_LARGHEZZA:e.viewport_larghezza||"", VIEWPORT_ALTEZZA:e.viewport_altezza||"",
+    ORIENTAMENTO:e.orientamento||"", FULLSCREEN_ATTIVO:e.fullscreen_attivo===true?"SI":e.fullscreen_attivo===false?"NO":"",
+    VISIBILITA_PAGINA:e.visibilita_pagina||"", DETTAGLI_JSON:JSON.stringify(e.dettagli||"")
+  })));
 }
 function cr01ReceiverSaveGiudizio_(id,rows) {
   cr01ReceiverAppendByHeader_("GIUDIZIO_PROVE",rows.map((r,i)=>({
