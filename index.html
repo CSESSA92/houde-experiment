@@ -249,6 +249,7 @@ main:focus { outline:none; }
   <span>EXPERIMENTAL INTERFACE · DEVELOPMENT VERSION</span>
 </footer>
 
+<script src="fullscreen.js"></script>
 <script>
 
 const API_URL =
@@ -345,7 +346,7 @@ function requestParticipant(token) {
 }
 
 
-startButton.addEventListener("click", async () => {
+startButton.addEventListener("cr01:initialize", async () => {
 
   errorBox.classList.add("hidden");
   errorBox.textContent = "";
@@ -408,6 +409,12 @@ startButton.addEventListener("click", async () => {
 
   }
 
+});
+
+startButton.addEventListener("click", () => {
+  CR01Display.createGate(() => {
+    startButton.dispatchEvent(new Event("cr01:initialize"));
+  }, { task: "ACCESSO" });
 });
 
 </script>
